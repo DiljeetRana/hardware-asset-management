@@ -2,10 +2,26 @@
 
 import { LoginForm } from "@/components/login-form"
 import { useEffect, useRef } from "react"
+import { useAuth } from "@/context/authcontext";
+import { useRouter } from "next/navigation";
 import Link from "next/link"
 
 export default function LoginPage() {
+    const { isAuthenticated, role, loading } = useAuth();
+  const router = useRouter();
   const canvasRef = useRef<HTMLCanvasElement>(null)
+
+  useEffect(() => {
+    if (!loading && isAuthenticated) {
+      // If admin, go to admin dashboard
+      if (role === "admin") router.push("/admin/dashboard");
+      else router.push("/"); // normal user home
+    }
+  }, [loading, isAuthenticated, role, router]);
+
+  if (loading) return <p>Loading...</p>;
+  if (isAuthenticated) return null; // prevents flicker
+
 
   useEffect(() => {
     const canvas = canvasRef.current
@@ -115,7 +131,7 @@ export default function LoginPage() {
   }, [])
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-white to-slate-50 relative overflow-hidden">
+    <div className="min-h-screen flex items-center justify-center bg-linear-to-br from-blue-50 via-white to-slate-50 relative overflow-hidden">
       {/* Animated particle canvas */}
       <canvas ref={canvasRef} className="absolute inset-0 pointer-events-none" />
 

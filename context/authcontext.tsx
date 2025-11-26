@@ -34,11 +34,16 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     try {
       const res = await fetch("/api/profile", { credentials: "include" });
       if (!res.ok) {
-        setUser(null);
-        setRole(null);
-        setLoading(false);
-        return;
-      }
+   setLoading(false);
+   return;
+}
+
+      // if (!res.ok) {
+      //   setUser(null);
+      //   setRole(null);
+      //   setLoading(false);
+      //   return;
+      // }
       const data = await res.json();
       setUser(data.id);
       setRole(data.role);

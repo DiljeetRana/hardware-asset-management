@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect, useState,useMemo } from "react"
 import { Card, CardContent } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Search, Calendar, User, Laptop, ArrowRight } from "lucide-react"
@@ -16,7 +16,9 @@ export default function AssignmentLogsPage() {
   const [filterType, setFilterType] = useState("all")
   const router = useRouter()
 
-  const enrichedAssignments = allAssignments
+  
+const enrichedAssignments = useMemo(() => {
+  return allAssignments
     .map((a: any) => {
       const device = devices.find((d: any) => d.id === a.deviceId)
       const employee = employees.find((e: any) => e.id === a.employeeId)
@@ -27,7 +29,13 @@ export default function AssignmentLogsPage() {
         isActive: !a.returnDate,
       }
     })
-    .sort((a: any, b: any) => new Date(b.assignedDate).getTime() - new Date(a.assignedDate).getTime())
+    .sort(
+      (a: any, b: any) =>
+        new Date(b.assignedDate).getTime() - new Date(a.assignedDate).getTime()
+    )
+}, [allAssignments, devices, employees])
+
+
 
   useEffect(() => {
     applyFilters()

@@ -22,40 +22,33 @@ export default function AdminDashboard() {
     loadDashboardData()
   }, [])
 
-  const loadDashboardData = () => {
-    // Load stats from localStorage
-    const devices = JSON.parse(localStorage.getItem("devices") || "[]")
-    const employees = JSON.parse(localStorage.getItem("employees") || "[]")
-    const assignments = JSON.parse(localStorage.getItem("assignments") || "[]")
+const loadDashboardData = async () => {
+  try {
+    const res = await fetch("/api/admin/dashboarddata", {
+      method: "GET",
+      credentials: "include",
+    });
+
+    if (!res.ok) return;
+
+    const data = await res.json();
 
     setStats({
-      totalDevices: devices.length,
-      availableDevices: devices.filter((d: any) => d.status === "Available").length,
-      totalEmployees: employees.length,
-      assignedDevices: devices.filter((d: any) => d.status === "Assigned").length,
-      activeEmployees: employees.filter((e: any) => e.status === "Active").length,
-      underRepair: devices.filter((d: any) => d.status === "Under Repair").length,
-    })
+      totalDevices: data.totalDevices,
+      availableDevices: data.availableDevices,
+      totalEmployees: data.totalEmployees,
+      assignedDevices: data.assignedDevices,
+      activeEmployees: data.activeEmployees,
+      underRepair: data.underRepair,
+    });
 
-    // Recent assignments
-    const recent = assignments
-      .sort((a: any, b: any) => new Date(b.assignedDate).getTime() - new Date(a.assignedDate).getTime())
-      .slice(0, 5)
-      .map((a: any) => {
-        const device = devices.find((d: any) => d.id === a.deviceId)
-        const employee = employees.find((e: any) => e.id === a.employeeId)
-        return { ...a, device, employee }
-      })
-    setRecentAssignments(recent)
-
-    // Devices by type
-    const typeCounts = devices.reduce((acc: any, device: any) => {
-      acc[device.deviceType] = (acc[device.deviceType] || 0) + 1
-      return acc
-    }, {})
-    const typeData = Object.entries(typeCounts).map(([type, count]) => ({ type, count }))
-    setDevicesByType(typeData)
+    // setRecentAssignments(data.recentAssignments);
+    setDevicesByType(data.devicesByType);
+  } catch (error) {
+    console.error("Dashboard API Error:", error);
   }
+};
+
 
   const statCards = [
     {
