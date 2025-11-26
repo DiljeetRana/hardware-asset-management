@@ -75,14 +75,36 @@ export function AppSidebar({ role, ...props }: AppSidebarProps) {
   const pathname = usePathname()
   const navItems = role === "admin" ? adminNavItems : employeeNavItems
 
-  const handleLogout = () => {
-    localStorage.clear()
-    router.push("/login")
+
+  const handleLogout = async () => {
+  try {
+    // Call logout API to clear HTTP-only cookie
+    await fetch("/api/logout", {
+      method: "POST",
+      credentials: "include", // send cookie
+    });
+
+    // Optionally clear any client-side state (if any)
+    // e.g., context user, role, etc.
+    // setUser(null);
+    // setRole(null);
+
+    // Redirect to login
+    router.push("/login");
+  } catch (err) {
+    console.error("Logout error:", err);
   }
+};
+
+
+  // const handleLogout = () => {
+  //   localStorage.clear()
+  //   router.push("/login")
+  // }
 
   return (
     <Sidebar {...props}>
-      <SidebarHeader className="border-b border-slate-200 p-4 bg-gradient-to-br from-[#005A9C]/5 to-blue-50">
+      <SidebarHeader className="border-b border-slate-200 p-4 bg-linear-to-br from-[#005A9C]/5 to-blue-50">
         <div className="flex items-center gap-3 mb-1 animate-fade-in">
           <div className="relative">
             <div className="absolute inset-0 bg-[#005A9C]/20 rounded-full blur-md opacity-50 animate-pulse" />
@@ -98,7 +120,7 @@ export function AppSidebar({ role, ...props }: AppSidebarProps) {
           </div>
         </div>
       </SidebarHeader>
-      <SidebarContent className="px-2 py-4 bg-gradient-to-b from-transparent to-blue-50/30">
+      <SidebarContent className="px-2 py-4 bg-linear-to-b from-transparent to-blue-50/30">
         <SidebarMenu>
           {navItems.map((item, index) => (
             <SidebarMenuItem

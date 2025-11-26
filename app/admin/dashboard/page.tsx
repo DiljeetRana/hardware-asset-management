@@ -93,7 +93,7 @@ export default function AdminDashboard() {
   ]
 
   return (
-    <div className="p-4 sm:p-6 lg:p-8 bg-gradient-to-br from-blue-50/50 via-white to-slate-50/50 min-h-screen">
+    <div className="p-4 sm:p-6 lg:p-8 bg-linear-to-br from-blue-50/50 via-white to-slate-50/50 min-h-screen">
       <div className="mb-6 lg:mb-8 animate-slide-up">
         <div className="flex items-center gap-3 mb-2">
           <div className="h-10 w-10 rounded-xl anthem-gradient flex items-center justify-center shadow-lg animate-pulse">
@@ -112,11 +112,11 @@ export default function AdminDashboard() {
             style={{ animationDelay: `${index * 0.1}s` }}
             onClick={() => router.push(stat.link)}
           >
-            <div className={`absolute top-0 left-0 right-0 h-1 bg-gradient-to-r ${stat.gradient}`} />
+            <div className={`absolute top-0 left-0 right-0 h-1 bg-linear-to-r ${stat.gradient}`} />
             <CardHeader className="flex flex-row items-center justify-between pb-2">
               <CardTitle className="text-sm font-semibold text-slate-700">{stat.title}</CardTitle>
               <div
-                className={`h-11 w-11 rounded-xl bg-gradient-to-br ${stat.gradient} flex items-center justify-center shadow-md group-hover:scale-110 transition-transform duration-300`}
+                className={`h-11 w-11 rounded-xl bg-linear-to-br ${stat.gradient} flex items-center justify-center shadow-md group-hover:scale-110 transition-transform duration-300`}
               >
                 <stat.icon className="h-5 w-5 text-white" />
               </div>
@@ -130,7 +130,7 @@ export default function AdminDashboard() {
       </div>
 
       {stats.underRepair > 0 && (
-        <Card className="bg-gradient-to-r from-amber-50 to-yellow-50 border-2 border-amber-200 mb-6 shadow-md">
+        <Card className="bg-linear-to-r from-amber-50 to-yellow-50 border-2 border-amber-200 mb-6 shadow-md">
           <CardContent className="py-4 flex items-center gap-3">
             <div className="h-10 w-10 rounded-full bg-amber-100 flex items-center justify-center">
               <AlertCircle className="h-5 w-5 text-amber-600" />
@@ -162,7 +162,7 @@ export default function AdminDashboard() {
                 {recentAssignments.map((assignment) => (
                   <div
                     key={assignment.id}
-                    className="flex items-center justify-between p-4 bg-gradient-to-r from-slate-50 to-blue-50/50 rounded-xl hover:shadow-md transition-all cursor-pointer border border-slate-200/50"
+                    className="flex items-center justify-between p-4 bg-linear-to-r from-slate-50 to-blue-50/50 rounded-xl hover:shadow-md transition-all cursor-pointer border border-slate-200/50"
                     onClick={() => router.push(`/admin/devices/${assignment.deviceId}`)}
                   >
                     <div className="flex-1 min-w-0">
@@ -174,7 +174,7 @@ export default function AdminDashboard() {
                     <div className="text-right ml-4">
                       <p className="text-xs text-slate-500">{new Date(assignment.assignedDate).toLocaleDateString()}</p>
                       {!assignment.returnDate && (
-                        <span className="text-xs px-2 py-1 bg-gradient-to-r from-[#1e4d7b] to-[#2563a8] text-white rounded-full shadow-sm">
+                        <span className="text-xs px-2 py-1 bg-linear-to-r from-[#1e4d7b] to-[#2563a8] text-white rounded-full shadow-sm">
                           Active
                         </span>
                       )}
@@ -205,7 +205,7 @@ export default function AdminDashboard() {
                     <div className="flex items-center gap-3">
                       <div className="w-32 h-3 bg-slate-200 rounded-full overflow-hidden shadow-inner">
                         <div
-                          className="h-full bg-gradient-to-r from-[#1e4d7b] to-[#2563a8] rounded-full shadow-sm"
+                          className="h-full bg-linear-to-r from-[#1e4d7b] to-[#2563a8] rounded-full shadow-sm"
                           style={{
                             width: `${(item.count / stats.totalDevices) * 100}%`,
                           }}
@@ -229,21 +229,21 @@ export default function AdminDashboard() {
           <CardContent className="space-y-2">
             <button
               onClick={() => router.push("/admin/devices/add")}
-              className="w-full text-left p-4 bg-gradient-to-r from-[#1e4d7b]/10 to-[#2563a8]/10 hover:from-[#1e4d7b]/20 hover:to-[#2563a8]/20 rounded-xl transition-all border border-[#1e4d7b]/20 hover:shadow-md"
+              className="w-full text-left p-4 bg-linear-to-r from-[#1e4d7b]/10 to-[#2563a8]/10 hover:from-[#1e4d7b]/20 hover:to-[#2563a8]/20 rounded-xl transition-all border border-[#1e4d7b]/20 hover:shadow-md"
             >
               <p className="font-semibold text-[#1e4d7b]">Add New Device</p>
               <p className="text-sm text-slate-600">Register hardware asset</p>
             </button>
             <button
               onClick={() => router.push("/admin/employees/add")}
-              className="w-full text-left p-4 bg-gradient-to-r from-purple-50 to-pink-50 hover:from-purple-100 hover:to-pink-100 rounded-xl transition-all border border-purple-200 hover:shadow-md"
+              className="w-full text-left p-4 bg-linear-to-r from-purple-50 to-pink-50 hover:from-purple-100 hover:to-pink-100 rounded-xl transition-all border border-purple-200 hover:shadow-md"
             >
               <p className="font-semibold text-purple-700">Add Employee</p>
               <p className="text-sm text-slate-600">Register staff member</p>
             </button>
             <button
               onClick={() => router.push("/admin/logs")}
-              className="w-full text-left p-4 bg-gradient-to-r from-slate-50 to-slate-100 hover:from-slate-100 hover:to-slate-200 rounded-xl transition-all border border-slate-200 hover:shadow-md"
+              className="w-full text-left p-4 bg-linear-to-r from-slate-50 to-slate-100 hover:from-slate-100 hover:to-slate-200 rounded-xl transition-all border border-slate-200 hover:shadow-md"
             >
               <p className="font-semibold text-slate-700">View Assignment Logs</p>
               <p className="text-sm text-slate-600">Track all assignments</p>
@@ -257,7 +257,7 @@ export default function AdminDashboard() {
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-2 gap-6">
-              <div className="p-4 bg-gradient-to-br from-blue-50 to-slate-50 rounded-xl border border-slate-200/50">
+              <div className="p-4 bg-linear-to-br from-blue-50 to-slate-50 rounded-xl border border-slate-200/50">
                 <p className="text-sm text-slate-600 mb-3 font-medium">Device Utilization</p>
                 <div className="flex items-end gap-2 mb-3">
                   <span className="text-4xl font-bold text-[#1e4d7b]">
@@ -267,7 +267,7 @@ export default function AdminDashboard() {
                 </div>
                 <div className="w-full h-3 bg-slate-200 rounded-full overflow-hidden shadow-inner">
                   <div
-                    className="h-full bg-gradient-to-r from-[#1e4d7b] to-[#2563a8] rounded-full shadow-sm"
+                    className="h-full bg-linear-to-r from-[#1e4d7b] to-[#2563a8] rounded-full shadow-sm"
                     style={{
                       width: `${stats.totalDevices > 0 ? (stats.assignedDevices / stats.totalDevices) * 100 : 0}%`,
                     }}
@@ -275,7 +275,7 @@ export default function AdminDashboard() {
                 </div>
               </div>
 
-              <div className="p-4 bg-gradient-to-br from-emerald-50 to-teal-50 rounded-xl border border-emerald-200/50">
+              <div className="p-4 bg-linear-to-br from-emerald-50 to-teal-50 rounded-xl border border-emerald-200/50">
                 <p className="text-sm text-slate-600 mb-3 font-medium">Employee Activity</p>
                 <div className="flex items-end gap-2 mb-3">
                   <span className="text-4xl font-bold text-emerald-600">
@@ -285,7 +285,7 @@ export default function AdminDashboard() {
                 </div>
                 <div className="w-full h-3 bg-emerald-200 rounded-full overflow-hidden shadow-inner">
                   <div
-                    className="h-full bg-gradient-to-r from-emerald-500 to-teal-500 rounded-full shadow-sm"
+                    className="h-full bg-linear-to-r from-emerald-500 to-teal-500 rounded-full shadow-sm"
                     style={{
                       width: `${stats.totalEmployees > 0 ? (stats.activeEmployees / stats.totalEmployees) * 100 : 0}%`,
                     }}
@@ -295,15 +295,15 @@ export default function AdminDashboard() {
 
               <div className="col-span-2 pt-4 border-t border-slate-200">
                 <div className="grid grid-cols-3 gap-4 text-center">
-                  <div className="p-3 bg-gradient-to-br from-emerald-50 to-teal-50 rounded-xl border border-emerald-200/50">
+                  <div className="p-3 bg-linear-to-br from-emerald-50 to-teal-50 rounded-xl border border-emerald-200/50">
                     <p className="text-3xl font-bold text-emerald-600">{stats.availableDevices}</p>
                     <p className="text-xs text-slate-600 mt-1 font-medium">Available</p>
                   </div>
-                  <div className="p-3 bg-gradient-to-br from-blue-50 to-slate-50 rounded-xl border border-blue-200/50">
+                  <div className="p-3 bg-linear-to-br from-blue-50 to-slate-50 rounded-xl border border-blue-200/50">
                     <p className="text-3xl font-bold text-[#1e4d7b]">{stats.assignedDevices}</p>
                     <p className="text-xs text-slate-600 mt-1 font-medium">Assigned</p>
                   </div>
-                  <div className="p-3 bg-gradient-to-br from-amber-50 to-yellow-50 rounded-xl border border-amber-200/50">
+                  <div className="p-3 bg-linear-to-br from-amber-50 to-yellow-50 rounded-xl border border-amber-200/50">
                     <p className="text-3xl font-bold text-amber-600">{stats.underRepair}</p>
                     <p className="text-xs text-slate-600 mt-1 font-medium">Under Repair</p>
                   </div>

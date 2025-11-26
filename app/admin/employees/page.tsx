@@ -68,7 +68,7 @@ export default function EmployeesPage() {
     <div className="p-4 sm:p-6 lg:p-8">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6 lg:mb-8">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-[#1e4d7b] to-[#2563a8] bg-clip-text text-transparent mb-2">
+          <h1 className="text-2xl sm:text-3xl font-bold bg-linear-to-r from-[#1e4d7b] to-[#2563a8] bg-clip-text text-transparent mb-2">
             Employees
           </h1>
           <p className="text-sm sm:text-base text-muted-foreground">Manage staff members and assignments</p>
@@ -132,7 +132,7 @@ export default function EmployeesPage() {
           >
             <CardHeader>
               <div className="flex items-center justify-between mb-2">
-                <div className="h-12 w-12 rounded-full bg-gradient-to-br from-[#1e4d7b] to-[#3b82f6] flex items-center justify-center">
+                <div className="h-12 w-12 rounded-full bg-linear-to-br from-[#1e4d7b] to-[#3b82f6] flex items-center justify-center">
                   <Users className="h-6 w-6 text-white" />
                 </div>
                 <span
@@ -147,11 +147,11 @@ export default function EmployeesPage() {
             <CardContent>
               <div className="space-y-2 text-sm">
                 <div className="flex items-center gap-2">
-                  <Mail className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+                  <Mail className="h-4 w-4 text-muted-foreground shrink-0" />
                   <span className="text-foreground truncate">{employee.email}</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <Phone className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+                  <Phone className="h-4 w-4 text-muted-foreground shrink-0" />
                   <span className="text-foreground">{employee.phone}</span>
                 </div>
                 <div className="flex justify-between pt-2 mt-2 border-t">
