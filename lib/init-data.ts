@@ -242,7 +242,7 @@ export function initializeDummyData() {
       phone: "+1 (555) 123-4567",
       department: "Engineering",
       designation: "Senior Software Engineer",
-      dateOfJoining: "2022-01-15",
+      hireDate: "2022-01-15",
       status: "Active",
     },
     {
@@ -252,7 +252,7 @@ export function initializeDummyData() {
       phone: "+1 (555) 234-5678",
       department: "Engineering",
       designation: "Frontend Developer",
-      dateOfJoining: "2022-03-20",
+      hireDate: "2022-03-20",
       status: "Active",
     },
     {
@@ -262,7 +262,7 @@ export function initializeDummyData() {
       phone: "+1 (555) 345-6789",
       department: "Design",
       designation: "UI/UX Designer",
-      dateOfJoining: "2022-06-10",
+      hireDate: "2022-06-10",
       status: "Active",
     },
     {
@@ -272,7 +272,7 @@ export function initializeDummyData() {
       phone: "+1 (555) 456-7890",
       department: "Product",
       designation: "Product Manager",
-      dateOfJoining: "2021-11-05",
+      hireDate: "2021-11-05",
       status: "Active",
     },
     {
@@ -282,7 +282,7 @@ export function initializeDummyData() {
       phone: "+1 (555) 567-8901",
       department: "Engineering",
       designation: "Backend Developer",
-      dateOfJoining: "2023-01-12",
+      hireDate: "2023-01-12",
       status: "Active",
     },
   ]

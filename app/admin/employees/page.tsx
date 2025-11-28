@@ -6,16 +6,54 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Plus, Search, Users, Mail, Phone } from "lucide-react"
 import { useRouter } from "next/navigation"
+import { useToast } from "@/hooks/use-toast"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { useDataStore } from "@/lib/hooks/use-data-store"
 
+export interface Employee {
+  id: string
+  name: string
+  email: string
+  phone: string
+  employeeCode: string
+  dob: string
+  department: string
+  position: string
+   hireDate: string
+  status: string
+}
 export default function EmployeesPage() {
-  const { employees, isLoaded } = useDataStore()
+   const { toast } = useToast()
+   const [employees, setEmployees] = useState<Employee[]>([])
   const [filteredEmployees, setFilteredEmployees] = useState<any[]>([])
   const [searchTerm, setSearchTerm] = useState("")
   const [filterDepartment, setFilterDepartment] = useState("all")
   const [filterStatus, setFilterStatus] = useState("all")
   const router = useRouter()
+
+
+ const fetchEmployees = async () => {
+      try {
+        const res = await fetch("/api/admin/employee")
+        if (!res.ok) throw new Error("Failed to fetch device types")
+        const data: Employee[] = await res.json()
+      
+      console.log("Fetched employees:", data);
+        setEmployees(data)
+      } catch (error) {
+        console.error(error)
+        toast({
+          title: "Error",
+          description: error instanceof Error ? error.message : "Something went wrong",
+          variant: "destructive",
+        })
+      }
+    }
+
+  // Fetch device types with counts
+  useEffect(() => {
+    fetchEmployees()
+  }, [])
+
 
   useEffect(() => {
     applyFilters()
@@ -29,7 +67,8 @@ export default function EmployeesPage() {
         (e) =>
           e.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
           e.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          e.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          e.employeeCode.toLowerCase().includes(searchTerm.toLowerCase()) ||
+           e.position.toLowerCase().includes(searchTerm.toLowerCase()) ||
           e.department.toLowerCase().includes(searchTerm.toLowerCase()),
       )
     }
@@ -45,10 +84,6 @@ export default function EmployeesPage() {
     setFilteredEmployees(filtered)
   }
 
-  const getDepartments = () => {
-    const depts = [...new Set(employees.map((e) => e.department))]
-    return depts
-  }
 
   const getStatusColor = (status: string) => {
     return status === "Active"
@@ -56,14 +91,8 @@ export default function EmployeesPage() {
       : "bg-gray-100 text-gray-600 border-gray-200"
   }
 
-  if (!isLoaded) {
-    return (
-      <div className="p-4 sm:p-6 lg:p-8">
-        <p className="text-muted-foreground">Loading employees...</p>
-      </div>
-    )
-  }
-
+  const departments = ["Engineering", "Design","Management", "Product", "Marketing", "Sales", "Testing","HR", "Finance", "Operations"];
+const status=["Active", "Inactive"];
   return (
     <div className="p-4 sm:p-6 lg:p-8">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6 lg:mb-8">
@@ -102,11 +131,11 @@ export default function EmployeesPage() {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All Departments</SelectItem>
-                {getDepartments().map((dept) => (
-                  <SelectItem key={dept} value={dept}>
-                    {dept}
-                  </SelectItem>
-                ))}
+               {departments.map((dept) => (
+                   <SelectItem key={dept} value={dept}>
+                     {dept}
+                   </SelectItem>
+                 ))}
               </SelectContent>
             </Select>
             <Select value={filterStatus} onValueChange={setFilterStatus}>
@@ -115,8 +144,11 @@ export default function EmployeesPage() {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All Status</SelectItem>
-                <SelectItem value="Active">Active</SelectItem>
-                <SelectItem value="Inactive">Inactive</SelectItem>
+                {status.map((stat) => (
+                                                       <SelectItem key={stat} value={stat}>
+                                                         {stat}
+                                                       </SelectItem>
+                                                     ))}
               </SelectContent>
             </Select>
           </div>
@@ -142,25 +174,25 @@ export default function EmployeesPage() {
                 </span>
               </div>
               <CardTitle className="text-base sm:text-lg text-foreground">{employee.name}</CardTitle>
-              <p className="text-sm text-muted-foreground">{employee.designation}</p>
+              <p className="text-sm text-muted-foreground">{employee.position}</p>
             </CardHeader>
             <CardContent>
               <div className="space-y-2 text-sm">
                 <div className="flex items-center gap-2">
                   <Mail className="h-4 w-4 text-muted-foreground shrink-0" />
-                  <span className="text-foreground truncate">{employee.email}</span>
+                  <span className="text-foreground truncate">{employee.email|| "N/A"}</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <Phone className="h-4 w-4 text-muted-foreground shrink-0" />
-                  <span className="text-foreground">{employee.phone}</span>
+                  <span className="text-foreground">{employee.phone||"N/A"}</span>
                 </div>
                 <div className="flex justify-between pt-2 mt-2 border-t">
                   <span className="text-muted-foreground">Department:</span>
-                  <span className="text-foreground font-medium">{employee.department}</span>
+                  <span className="text-foreground font-medium">{employee.department||"N/A"}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Employee ID:</span>
-                  <span className="text-foreground font-mono text-xs">{employee.id}</span>
+                  <span className="text-foreground font-mono text-xs">{employee.employeeCode|| "N/A"}</span>
                 </div>
               </div>
             </CardContent>

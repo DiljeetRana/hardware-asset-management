@@ -37,13 +37,6 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
    setLoading(false);
    return;
 }
-
-      // if (!res.ok) {
-      //   setUser(null);
-      //   setRole(null);
-      //   setLoading(false);
-      //   return;
-      // }
       const data = await res.json();
       setUser(data.id);
       setRole(data.role);
@@ -115,13 +108,6 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   }
 };
 
-
-//   const logout = () => {
-//     removeCookie("token");
-//     setUser(null);
-//     setRole(null);
-//     window.location.href = "/login";
-//   };
 
   return (
     <AuthContext.Provider

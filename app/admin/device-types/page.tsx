@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState,useEffect} from "react"
 import { Plus, Pencil, Trash2, Search } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -16,7 +16,6 @@ import {
 } from "@/components/ui/dialog"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
-import { useDataStore } from "@/lib/hooks/use-data-store"
 import { useToast } from "@/hooks/use-toast"
 import {
   AlertDialog,
@@ -29,107 +28,165 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
 
+
+
+interface DeviceTypeWithCount {
+  _id: string  
+  type: string
+  totalDevices: number
+  description?: string
+}
 export default function DeviceTypesPage() {
-  const { deviceTypes, devices, addDeviceType, updateDeviceType, deleteDeviceType, isLoaded } = useDataStore()
   const { toast } = useToast()
+   const [deviceTypes, setDeviceTypes] = useState<DeviceTypeWithCount[]>([])
   const [searchTerm, setSearchTerm] = useState("")
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false)
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false)
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
   const [selectedType, setSelectedType] = useState<string | null>(null)
   const [formData, setFormData] = useState({ name: "", description: "" })
+  const [isLoaded, setIsLoaded] = useState(false)
 
-  const filteredTypes = deviceTypes.filter((type) => type.name.toLowerCase().includes(searchTerm.toLowerCase()))
-
-  const handleAdd = () => {
-    if (!formData.name.trim()) {
-      toast({
-        title: "Error",
-        description: "Device type name is required",
-        variant: "destructive",
-      })
-      return
+ const fetchDeviceTypes = async () => {
+      try {
+        const res = await fetch("/api/admin/resource-type")
+        if (!res.ok) throw new Error("Failed to fetch device types")
+        const data: DeviceTypeWithCount[] = await res.json()
+      
+      console.log("Fetched device types:", data);
+        setDeviceTypes(data)
+      } catch (error) {
+        console.error(error)
+        toast({
+          title: "Error",
+          description: error instanceof Error ? error.message : "Something went wrong",
+          variant: "destructive",
+        })
+      }
     }
 
-    const newType = {
-      id: `DT${Date.now()}`,
-      name: formData.name,
-      description: formData.description,
-      createdAt: new Date().toISOString().split("T")[0],
-    }
+  // Fetch device types with counts
+  useEffect(() => {
+    fetchDeviceTypes()
+  }, [])
 
-    addDeviceType(newType)
-    toast({
-      title: "Device Type Added",
-      description: `${formData.name} has been added successfully`,
-    })
-    setFormData({ name: "", description: "" })
-    setIsAddDialogOpen(false)
-  }
-
-  const handleEdit = () => {
-    if (!selectedType || !formData.name.trim()) return
-
-    updateDeviceType(selectedType, {
-      name: formData.name,
-      description: formData.description,
-    })
-
-    toast({
-      title: "Device Type Updated",
-      description: "Device type has been updated successfully",
-    })
-    setFormData({ name: "", description: "" })
-    setIsEditDialogOpen(false)
-    setSelectedType(null)
-  }
-
-  const handleDelete = () => {
-    if (!selectedType) return
-
-    try {
-      deleteDeviceType(selectedType)
-      toast({
-        title: "Device Type Deleted",
-        description: "Device type has been deleted successfully",
-      })
-    } catch (error) {
-      toast({
-        title: "Cannot Delete",
-        description: error instanceof Error ? error.message : "An error occurred",
-        variant: "destructive",
-      })
-    }
-
-    setIsDeleteDialogOpen(false)
-    setSelectedType(null)
-  }
-
-  const openEditDialog = (typeId: string) => {
-    const type = deviceTypes.find((t) => t.id === typeId)
-    if (type) {
-      setSelectedType(typeId)
-      setFormData({ name: type.name, description: type.description || "" })
-      setIsEditDialogOpen(true)
-    }
-  }
-
-  const openDeleteDialog = (typeId: string) => {
-    setSelectedType(typeId)
-    setIsDeleteDialogOpen(true)
-  }
+  const filteredTypes = deviceTypes.filter((type) =>
+    type.type.toLowerCase().includes(searchTerm.toLowerCase())
+  )
 
   const getDeviceCount = (typeName: string) => {
-    return devices.filter((d) => d.deviceType === typeName).length
+    const type = deviceTypes.find((d) => d.type === typeName)
+    return type?.totalDevices || 0
   }
 
-  if (!isLoaded) {
-    return (
-      <div className="flex items-center justify-center h-96">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#005A9C]" />
-      </div>
-    )
+
+const handleAdd = async () => {
+  if (!formData.name.trim()) {
+    toast({
+      title: "Error",
+      description: "Device type name is required",
+      variant: "destructive",
+    });
+    return;
   }
+
+  try {
+    // Call backend API to add device type
+    const res = await fetch("/api/admin/resource-type", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        name: formData.name,
+        description: formData.description,
+      }),
+    });
+
+    if (!res.ok) {
+      const errorData = await res.json();
+      throw new Error(errorData.error || "Failed to add device type");
+    }
+
+    const data = await res.json();
+    console.log("Added device type:", data);
+
+    toast({
+      title: "Device Type Added",
+      description: `${data.name} has been added successfully`,
+    });
+
+    // Reset form and close dialog
+    setFormData({ name: "", description: "" });
+    setIsAddDialogOpen(false);
+    await fetchDeviceTypes(); // Refresh the list
+
+  } catch (error: any) {
+    toast({
+      title: "Error",
+      description: error.message || "Something went wrong",
+      variant: "destructive",
+    });
+  }
+};
+
+
+const handleEdit=()=>{
+  console.log("Edit device type:", formData)
+}
+
+const handleDelete = async (id: string) => {
+  console.log("Deleting device type with ID:", id); // Debug log
+  
+  try {
+    const res = await fetch(`/api/admin/resource-type/${id}`, {
+      method: "DELETE",
+    });
+
+    if (!res.ok) {
+      const data = await res.json();
+      toast({
+        title: "Error",
+        description: data.error || "Failed to delete device type",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    toast({
+      title: "Success",
+      description: "Device type deleted successfully",
+    });
+
+    // Reset state and close dialog
+    setSelectedType(null);
+    setIsDeleteDialogOpen(false);
+    await fetchDeviceTypes(); // refresh list
+  } catch (err: any) {
+    console.error("Delete error:", err);
+    toast({
+      title: "Error",
+      description: err.message || "Failed to delete device type",
+      variant: "destructive",
+    });
+  }
+};
+const openEditDialog=(typeId:string)=>{
+  const type = deviceTypes.find((t) => t.type === typeId)}
+
+ 
+  const openDeleteDialog = (typeId: string) => {
+  console.log("Opening delete dialog for ID:", typeId); // Debug log
+  setSelectedType(typeId);
+  setIsDeleteDialogOpen(true);
+};
+
+
+  // if (!isLoaded) {
+  //   return (
+  //     <div className="flex items-center justify-center h-96">
+  //       <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#005A9C]" />
+  //     </div>
+  //   )
+  // }
 
   return (
     <div className="p-4 md:p-8 animate-fadeIn">
@@ -199,18 +256,18 @@ export default function DeviceTypesPage() {
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
         {filteredTypes.map((type, index) => (
           <Card
-            key={type.id}
+            key={type._id}
             className="glass-card hover:shadow-xl transition-all duration-300 hover:scale-[1.02] animate-slide-up"
             style={{ animationDelay: `${index * 0.05}s` }}
           >
             <CardHeader>
               <CardTitle className="text-[#005A9C] flex items-start justify-between">
-                <span>{type.name}</span>
+                <span>{type.type}</span>
                 <div className="flex gap-2">
                   <Button
                     variant="ghost"
                     size="sm"
-                    onClick={() => openEditDialog(type.id)}
+                    onClick={() => openEditDialog(type._id)}
                     className="h-8 w-8 p-0 hover:bg-[#005A9C]/10 hover:text-[#005A9C] transition-colors"
                   >
                     <Pencil className="h-4 w-4" />
@@ -218,7 +275,7 @@ export default function DeviceTypesPage() {
                   <Button
                     variant="ghost"
                     size="sm"
-                    onClick={() => openDeleteDialog(type.id)}
+                    onClick={() => openDeleteDialog(type._id)}
                     className="h-8 w-8 p-0 hover:bg-red-50 hover:text-red-600 transition-colors"
                   >
                     <Trash2 className="h-4 w-4" />
@@ -230,7 +287,7 @@ export default function DeviceTypesPage() {
             <CardContent>
               <div className="flex justify-between items-center text-sm">
                 <span className="text-slate-600">Devices using this type:</span>
-                <span className="font-semibold text-[#005A9C] text-lg">{getDeviceCount(type.name)}</span>
+                <span className="font-semibold text-[#005A9C] text-lg">{getDeviceCount(type.type)}</span>
               </div>
             </CardContent>
           </Card>
@@ -290,7 +347,7 @@ export default function DeviceTypesPage() {
       </Dialog>
 
       {/* Delete Confirmation Dialog */}
-      <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+      {/* <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Are you sure?</AlertDialogTitle>
@@ -301,12 +358,38 @@ export default function DeviceTypesPage() {
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={handleDelete} className="bg-red-600 hover:bg-red-700">
+            <AlertDialogAction  onClick={handleDelete} className="bg-red-600 hover:bg-red-700">
               Delete
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
-      </AlertDialog>
+
+      </AlertDialog> */}
+      {/* Delete Confirmation Dialog */}
+<AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+  <AlertDialogContent>
+    <AlertDialogHeader>
+      <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+      <AlertDialogDescription>
+        This will permanently delete the device type. This action cannot be undone. 
+        Devices currently using this type will prevent deletion.
+      </AlertDialogDescription>
+    </AlertDialogHeader>
+    <AlertDialogFooter>
+      <AlertDialogCancel>Cancel</AlertDialogCancel>
+      <AlertDialogAction 
+        onClick={() => {
+          if (selectedType) {
+            handleDelete(selectedType);
+          }
+        }} 
+        className="bg-red-600 hover:bg-red-700"
+      >
+        Delete
+      </AlertDialogAction>
+    </AlertDialogFooter>
+  </AlertDialogContent>
+</AlertDialog>
     </div>
   )
 }

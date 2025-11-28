@@ -131,14 +131,14 @@ export function EditEmployeeModal({ employee, open, onOpenChange, onUpdate }: Ed
 
             <div className="grid gap-4 md:grid-cols-2">
               <div className="space-y-2">
-                <Label htmlFor="edit-dateOfJoining" className="text-slate-200">
+                <Label htmlFor="edit-hireDate" className="text-slate-200">
                   Date of Joining
                 </Label>
                 <Input
-                  id="edit-dateOfJoining"
-                  name="dateOfJoining"
+                  id="edit-hireDate"
+                  name="hireDate"
                   type="date"
-                  value={formData.dateOfJoining}
+                  value={formData.hireDate}
                   onChange={handleChange}
                   className="bg-slate-900/50 border-slate-600 text-white"
                 />

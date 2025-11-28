@@ -11,44 +11,66 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { useToast } from "@/hooks/use-toast"
 import { ArrowLeft } from "lucide-react"
-import { useDataStore } from "@/lib/hooks/use-data-store"
+import employee from "@/models/employee"
 
 export default function AddEmployeePage() {
   const router = useRouter()
   const { toast } = useToast()
-  const { addEmployee } = useDataStore()
   const [isSubmitting, setIsSubmitting] = useState(false)
 
   const [formData, setFormData] = useState({
     name: "",
     email: "",
     phone: "",
+    birthday:"",
+    employeeCode:"",
     department: "",
-    designation: "",
-    dateOfJoining: "",
+    position: "",
+    hireDate: "",
     status: "Active",
+   
   })
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value })
+    console.log(formData.hireDate)
   }
 
   const handleSelectChange = (name: string, value: string) => {
     setFormData({ ...formData, [name]: value })
   }
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
-    setIsSubmitting(true)
+  const handleSubmit = async (e: React.FormEvent) => {
+  e.preventDefault()
+  setIsSubmitting(true)
 
-    const id = `EMP${String(Date.now()).slice(-6)}`
-
-    const newEmployee = {
-      id,
-      ...formData,
+  try {
+    const payload = {
+      name: formData.name,
+      email: formData.email,
+      phone: formData.phone,
+      employeeCode: formData.employeeCode,   // ✅ added
+      birthday: formData.birthday,                     // ✅ added
+      department: formData.department,
+      position: formData.position,
+     hireDate: formData.hireDate,
+      status: formData.status || "Active ",
     }
 
-    addEmployee(newEmployee)
+    console.log("Sending employee data:", payload)
+
+    const res = await fetch("/api/admin/employee", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(payload),
+    })
+
+    if (!res.ok) {
+      const errorData = await res.json()
+      throw new Error(errorData.error || "Failed to create employee")
+    }
 
     toast({
       title: "Employee Added",
@@ -58,8 +80,21 @@ export default function AddEmployeePage() {
     setTimeout(() => {
       router.push("/admin/employees")
     }, 1000)
-  }
 
+  } catch (error: any) {
+    console.error("Error adding employee:", error)
+    toast({
+      title: "Error",
+      description: error.message || "Something went wrong",
+      variant: "destructive",
+    })
+  } finally {
+    setIsSubmitting(false)
+  }
+}
+
+const departments = ["Engineering", "Design","Management", "Product", "Marketing", "Sales","Testing", "HR", "Finance", "Operations"];
+const status=["Active", "Inactive"];
   return (
     <div className="p-8">
       <Button variant="ghost" onClick={() => router.back()} className="mb-6 text-slate-400 hover:text-white">
@@ -125,6 +160,42 @@ export default function AddEmployeePage() {
               />
             </div>
 
+
+
+
+            {/*  Employee Code */}
+  <div className="space-y-2">
+    <Label htmlFor="employeeCode" className="text-slate-200">
+      Employee Code *
+    </Label>
+    <Input
+      id="employeeCode"
+      name="employeeCode"
+      value={formData.employeeCode}
+      onChange={handleChange}
+      required
+      placeholder="e.g., 089"
+      className="bg-slate-900/50 border-slate-600 text-white"
+    />
+  </div>
+
+  {/*  birthday */}
+  <div className="space-y-2">
+    <Label htmlFor="birthday" className="text-slate-200">
+      Date of Birth *
+    </Label>
+    <Input
+      id="birthday"
+      name="birthday"
+      type="date"
+      value={formData.birthday}
+      onChange={handleChange}
+      required
+      className="bg-slate-900/50 border-slate-600 text-white"
+    />
+  </div>
+
+
             <div className="grid gap-4 md:grid-cols-2">
               <div className="space-y-2">
                 <Label htmlFor="department" className="text-slate-200">
@@ -139,26 +210,23 @@ export default function AddEmployeePage() {
                     <SelectValue placeholder="Select department" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="Engineering">Engineering</SelectItem>
-                    <SelectItem value="Design">Design</SelectItem>
-                    <SelectItem value="Product">Product</SelectItem>
-                    <SelectItem value="Marketing">Marketing</SelectItem>
-                    <SelectItem value="Sales">Sales</SelectItem>
-                    <SelectItem value="HR">HR</SelectItem>
-                    <SelectItem value="Finance">Finance</SelectItem>
-                    <SelectItem value="Operations">Operations</SelectItem>
+                    {departments.map((dept) => (
+    <SelectItem key={dept} value={dept}>
+      {dept}
+    </SelectItem>
+  ))}
                   </SelectContent>
                 </Select>
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="designation" className="text-slate-200">
+                <Label htmlFor="position" className="text-slate-200">
                   Designation *
                 </Label>
                 <Input
-                  id="designation"
-                  name="designation"
-                  value={formData.designation}
+                  id="position"
+                  name="position"
+                  value={formData.position}
                   onChange={handleChange}
                   required
                   placeholder="e.g., Senior Developer"
@@ -169,14 +237,14 @@ export default function AddEmployeePage() {
 
             <div className="grid gap-4 md:grid-cols-2">
               <div className="space-y-2">
-                <Label htmlFor="dateOfJoining" className="text-slate-200">
-                  Date of Joining *
+                <Label htmlFor="hireDate" className="text-slate-200">
+                 Hire Date *
                 </Label>
                 <Input
-                  id="dateOfJoining"
-                  name="dateOfJoining"
+                  id="hireDate"
+                  name="hireDate"
                   type="date"
-                  value={formData.dateOfJoining}
+                  value={formData.hireDate}
                   onChange={handleChange}
                   required
                   className="bg-slate-900/50 border-slate-600 text-white"
@@ -192,8 +260,11 @@ export default function AddEmployeePage() {
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="Active">Active</SelectItem>
-                    <SelectItem value="Inactive">Inactive</SelectItem>
+                     {status.map((stat) => (
+                                       <SelectItem key={stat} value={stat}>
+                                         {stat}
+                                       </SelectItem>
+                                     ))}
                   </SelectContent>
                 </Select>
               </div>

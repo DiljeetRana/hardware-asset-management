@@ -11,16 +11,7 @@ export default function LoginPage() {
   const router = useRouter();
   const canvasRef = useRef<HTMLCanvasElement>(null)
 
-  useEffect(() => {
-    if (!loading && isAuthenticated) {
-      // If admin, go to admin dashboard
-      if (role === "admin") router.push("/admin/dashboard");
-      else router.push("/"); // normal user home
-    }
-  }, [loading, isAuthenticated, role, router]);
 
-  if (loading) return <p>Loading...</p>;
-  if (isAuthenticated) return null; // prevents flicker
 
 
   useEffect(() => {
@@ -130,6 +121,17 @@ export default function LoginPage() {
     }
   }, [])
 
+
+    useEffect(() => {
+    if (!loading && isAuthenticated) {
+      // If admin, go to admin dashboard
+      if (role === "admin") router.push("/admin/dashboard");
+      else router.push("/"); // normal user home
+    }
+  }, [loading, isAuthenticated, role, router]);
+
+  if (loading) return <p>Loading...</p>;
+  if (isAuthenticated) return null; // prevents flicker
   return (
     <div className="min-h-screen flex items-center justify-center bg-linear-to-br from-blue-50 via-white to-slate-50 relative overflow-hidden">
       {/* Animated particle canvas */}

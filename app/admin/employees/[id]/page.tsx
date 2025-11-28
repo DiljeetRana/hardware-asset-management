@@ -170,7 +170,7 @@ export default function EmployeeDetailPage() {
                   <Calendar className="h-4 w-4 text-slate-500" />
                   <div>
                     <p className="text-xs text-slate-400">Date of Joining</p>
-                    <p className="text-white">{new Date(employee.dateOfJoining).toLocaleDateString()}</p>
+                    <p className="text-white">{new Date(employee.hireDate).toLocaleDateString()}</p>
                   </div>
                 </div>
                 <div className="flex items-center gap-3">

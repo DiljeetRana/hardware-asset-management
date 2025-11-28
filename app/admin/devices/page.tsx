@@ -7,15 +7,54 @@ import { Input } from "@/components/ui/input"
 import { Plus, Search, Laptop, Monitor, Smartphone, Tablet, Package } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { useDataStore } from "@/lib/hooks/use-data-store"
+import { useToast } from "@/hooks/use-toast"
+
+interface DeviceTypeWithCount {
+  _id: string  
+  type: string
+  totalDevices: number
+  description?: string
+}
+
 
 export default function DevicesPage() {
-  const { devices, isLoaded } = useDataStore()
+  const { toast } = useToast()
   const [filteredDevices, setFilteredDevices] = useState<any[]>([])
+   const [deviceTypes, setDeviceTypes] = useState<DeviceTypeWithCount[]>([])
+   const [isLoaded, setIsLoaded] = useState(false)
+   const [devices, setDevices] = useState<any[]>([])  
   const [searchTerm, setSearchTerm] = useState("")
   const [filterType, setFilterType] = useState("all")
   const [filterStatus, setFilterStatus] = useState("all")
   const router = useRouter()
+
+
+ const fetchDeviceTypes = async () => {
+      try {
+        const res = await fetch("/api/admin/resource-type")
+        if (!res.ok) throw new Error("Failed to fetch device types")
+        const data: DeviceTypeWithCount[] = await res.json()
+      
+      console.log("Fetched device types:", data);
+        setDeviceTypes(data)
+      } catch (error) {
+        console.error(error)
+        toast({
+          title: "Error",
+          description: error instanceof Error ? error.message : "Something went wrong",
+          variant: "destructive",
+        })
+      }
+    }
+
+  // Fetch device types with counts
+  useEffect(() => {
+    fetchDeviceTypes()
+  }, [])
+
+
+
+  const statusOptions = ["all", "Available", "Assigned", "Under Repair", "Retired", "Lost"]
 
   useEffect(() => {
     applyFilters()
@@ -77,19 +116,19 @@ export default function DevicesPage() {
     }
   }
 
-  if (!isLoaded) {
-    return (
-      <div className="p-4 sm:p-6 lg:p-8">
-        <p className="text-muted-foreground">Loading devices...</p>
-      </div>
-    )
-  }
+  // if (!isLoaded) {
+  //   return (
+  //     <div className="p-4 sm:p-6 lg:p-8">
+  //       <p className="text-muted-foreground">Loading devices...</p>
+  //     </div>
+  //   )
+  // }
 
   return (
     <div className="p-4 sm:p-6 lg:p-8">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6 lg:mb-8">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-[#1e4d7b] to-[#2563a8] bg-clip-text text-transparent mb-2">
+          <h1 className="text-2xl sm:text-3xl font-bold bg-linear-to-r from-[#1e4d7b] to-[#2563a8] bg-clip-text text-transparent mb-2">
             Devices
           </h1>
           <p className="text-sm sm:text-base text-muted-foreground">Manage all hardware assets</p>
@@ -123,11 +162,11 @@ export default function DevicesPage() {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All Types</SelectItem>
-                <SelectItem value="Laptop">Laptop</SelectItem>
-                <SelectItem value="Desktop">Desktop</SelectItem>
-                <SelectItem value="Mobile">Mobile</SelectItem>
-                <SelectItem value="Tablet">Tablet</SelectItem>
-                <SelectItem value="Peripheral">Peripheral</SelectItem>
+                {deviceTypes.map((type) => (
+      <SelectItem key={type._id} value={type.type}>
+        {type.type}
+      </SelectItem>
+    ))}
               </SelectContent>
             </Select>
             <Select value={filterStatus} onValueChange={setFilterStatus}>
@@ -135,12 +174,12 @@ export default function DevicesPage() {
                 <SelectValue placeholder="Status" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All Status</SelectItem>
-                <SelectItem value="Available">Available</SelectItem>
-                <SelectItem value="Assigned">Assigned</SelectItem>
-                <SelectItem value="Under Repair">Under Repair</SelectItem>
-                <SelectItem value="Retired">Retired</SelectItem>
-                <SelectItem value="Lost">Lost</SelectItem>
+                
+                 {statusOptions.map((status) => (
+      <SelectItem key={status} value={status}>
+        {status === "all" ? "All Status" : status}
+      </SelectItem>
+    ))}
               </SelectContent>
             </Select>
           </div>
@@ -158,7 +197,7 @@ export default function DevicesPage() {
             >
               <CardHeader>
                 <div className="flex items-center justify-between mb-2">
-                  <div className="h-10 w-10 rounded-lg bg-gradient-to-br from-[#1e4d7b] to-[#3b82f6] flex items-center justify-center">
+                  <div className="h-10 w-10 rounded-lg bg-linear-to-br from-[#1e4d7b] to-[#3b82f6] flex items-center justify-center">
                     <Icon className="h-5 w-5 text-white" />
                   </div>
                   <span

@@ -36,7 +36,7 @@ export interface Employee {
   phone: string
   department: string
   designation: string
-  dateOfJoining: string
+  hireDate: string
   status: string
 }
 

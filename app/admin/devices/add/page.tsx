@@ -2,7 +2,7 @@
 
 import type React from "react"
 
-import { useState } from "react"
+import { useState,useEffect} from "react"
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -15,11 +15,21 @@ import { ArrowLeft } from "lucide-react"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { ImageUpload } from "@/components/image-upload"
 import { useDataStore } from "@/lib/hooks/use-data-store"
+interface DeviceTypeWithCount {
+  _id: string  
+  type: string
+  totalDevices: number
+  description?: string
+}
+
+
+
+
 
 export default function AddDevicePage() {
   const router = useRouter()
   const { toast } = useToast()
-  const { addDevice, deviceTypes } = useDataStore()
+  const [deviceTypes, setDeviceTypes] = useState<DeviceTypeWithCount[]>([])
   const [isSubmitting, setIsSubmitting] = useState(false)
 
   const [formData, setFormData] = useState({
@@ -47,6 +57,31 @@ export default function AddDevicePage() {
 
   const [images, setImages] = useState<string[]>([])
 
+
+  const fetchDeviceTypes = async () => {
+        try {
+          const res = await fetch("/api/admin/resource-type")
+          if (!res.ok) throw new Error("Failed to fetch device types")
+          const data: DeviceTypeWithCount[] = await res.json()
+        
+        console.log("Fetched device types:", data);
+          setDeviceTypes(data)
+        } catch (error) {
+          console.error(error)
+          toast({
+            title: "Error",
+            description: error instanceof Error ? error.message : "Something went wrong",
+            variant: "destructive",
+          })
+        }
+      }
+  
+    // Fetch device types with counts
+    useEffect(() => {
+      fetchDeviceTypes()
+    }, [])
+  
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value })
   }
@@ -68,7 +103,7 @@ export default function AddDevicePage() {
       images,
     }
 
-    addDevice(newDevice)
+    
 
     toast({
       title: "Device Added",
@@ -79,7 +114,7 @@ export default function AddDevicePage() {
       router.push("/admin/devices")
     }, 1000)
   }
-
+  const statusOptions = ["all", "Available", "Assigned", "Under Repair", "Retired", "Lost"]
   return (
     <div className="p-4 md:p-8 animate-fadeIn">
       <Button
@@ -126,10 +161,10 @@ export default function AddDevicePage() {
                       </SelectTrigger>
                       <SelectContent>
                         {deviceTypes.map((type) => (
-                          <SelectItem key={type.id} value={type.name}>
-                            {type.name}
-                          </SelectItem>
-                        ))}
+      <SelectItem key={type._id} value={type.type}>
+        {type.type}
+      </SelectItem>
+    ))}
                       </SelectContent>
                     </Select>
                   </div>
@@ -288,11 +323,12 @@ export default function AddDevicePage() {
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="Available">Available</SelectItem>
-                        <SelectItem value="Assigned">Assigned</SelectItem>
-                        <SelectItem value="Under Repair">Under Repair</SelectItem>
-                        <SelectItem value="Retired">Retired</SelectItem>
-                        <SelectItem value="Lost">Lost</SelectItem>
+                        
+                                         {statusOptions.map((status) => (
+                              <SelectItem key={status} value={status}>
+                                {status === "all" ? "All Status" : status}
+                              </SelectItem>
+                            ))}
                       </SelectContent>
                     </Select>
                   </div>

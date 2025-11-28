@@ -11,7 +11,10 @@ export async function POST(req: Request) {
     const { email, password } = await req.json();
 
     if (!email || !password) {
-      return NextResponse.json({ error: "Email and password are required" }, { status: 400 });
+      return NextResponse.json(
+        { error: "Email and password are required" },
+        { status: 400 }
+      );
     }
 
     // ===============================
@@ -19,10 +22,20 @@ export async function POST(req: Request) {
     // ===============================
     if (email === "admin@antheminfotech.com") {
       const admin = await Employee.findOne({ email });
-      if (!admin) return NextResponse.json({ error: "Admin not found" }, { status: 404 });
+      if (!admin) {
+        return NextResponse.json(
+          { error: "Admin not found" },
+          { status: 404 }
+        );
+      }
 
       const isMatch = await bcrypt.compare(password, admin.password);
-      if (!isMatch) return NextResponse.json({ error: "Invalid admin password" }, { status: 401 });
+      if (!isMatch) {
+        return NextResponse.json(
+          { error: "Invalid admin password" },
+          { status: 401 }
+        );
+      }
 
       const token = jwt.sign(
         { id: admin._id, role: admin.role },
@@ -35,10 +48,11 @@ export async function POST(req: Request) {
         {
           status: 200,
           headers: {
-
-           "Set-Cookie": `token=${token}; HttpOnly; Path=/; Max-Age=${7 * 24 * 60 * 60}; SameSite=Lax${process.env.NODE_ENV === "production" ? "; Secure" : ""}`
-
-
+            "Set-Cookie": `token=${token}; HttpOnly; Path=/; Max-Age=${
+              7 * 24 * 60 * 60
+            }; SameSite=Lax${
+              process.env.NODE_ENV === "production" ? "; Secure" : ""
+            }`,
           },
         }
       );
@@ -48,19 +62,27 @@ export async function POST(req: Request) {
     // EMPLOYEE LOGIN
     // ===============================
     const employee = await Employee.findOne({ email });
-    if (!employee) return NextResponse.json({ error: "Employee not found" }, { status: 404 });
-
+    if (!employee) {
+      return NextResponse.json(
+        { error: "Employee not found" },
+        { status: 404 }
+      );
+    }
+   const birthYear = new Date(employee.birthday).getFullYear();
     const expectedFirstPassword =
       employee.employeeCode.slice(-3) +
       "#" +
       employee.phone.slice(-4) +
       "@" +
-      employee.birthYear;
+      birthYear;
 
-    // First-time login
+    // First-time login: no password stored
     if (!employee.password) {
       if (password !== expectedFirstPassword) {
-        return NextResponse.json({ error: "Invalid password" }, { status: 401 });
+        return NextResponse.json(
+          { error: "Invalid password" },
+          { status: 401 }
+        );
       }
 
       employee.password = await bcrypt.hash(password, 10);
@@ -69,7 +91,12 @@ export async function POST(req: Request) {
 
     // Normal login
     const isMatch = await bcrypt.compare(password, employee.password);
-    if (!isMatch) return NextResponse.json({ error: "Invalid credentials" }, { status: 401 });
+    if (!isMatch) {
+      return NextResponse.json(
+        { error: "Invalid credentials" },
+        { status: 401 }
+      );
+    }
 
     const token = jwt.sign(
       { id: employee._id, role: employee.role },
@@ -82,7 +109,11 @@ export async function POST(req: Request) {
       {
         status: 200,
         headers: {
-          "Set-Cookie": `token=${token}; HttpOnly; Path=/; Max-Age=${7 * 24 * 60 * 60}; Secure; SameSite=Lax`,
+          "Set-Cookie": `token=${token}; HttpOnly; Path=/; Max-Age=${
+            7 * 24 * 60 * 60
+          }; SameSite=Lax${
+            process.env.NODE_ENV === "production" ? "; Secure" : ""
+          }`,
         },
       }
     );
