@@ -122,7 +122,7 @@ export function EditEmployeeModal({ employee, open, onOpenChange, onUpdate }: Ed
                 <Input
                   id="edit-designation"
                   name="designation"
-                  value={formData.designation}
+                  value={formData.position}
                   onChange={handleChange}
                   className="bg-slate-900/50 border-slate-600 text-white"
                 />

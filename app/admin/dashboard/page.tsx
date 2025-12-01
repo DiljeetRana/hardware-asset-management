@@ -32,7 +32,7 @@ const loadDashboardData = async () => {
     if (!res.ok) return;
 
     const data = await res.json();
-
+console.log("dashboard data:",data);
     setStats({
       totalDevices: data.totalDevices,
       availableDevices: data.availableDevices,
@@ -48,6 +48,18 @@ const loadDashboardData = async () => {
     console.error("Dashboard API Error:", error);
   }
 };
+useEffect(() => {
+  const fetchRecent = async () => {
+    try {
+      const res = await fetch("/api/admin/recent-allocation?limit=10"); // fetch 10 latest
+      const data = await res.json();
+      if (data.success) setRecentAssignments(data.recentAssignments);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+  fetchRecent();
+}, []);
 
 
   const statCards = [
@@ -105,7 +117,7 @@ const loadDashboardData = async () => {
             style={{ animationDelay: `${index * 0.1}s` }}
             onClick={() => router.push(stat.link)}
           >
-            <div className={`absolute top-0 left-0 right-0 h-1 bg-linear-to-r ${stat.gradient}`} />
+            <div className={`absolute top-0 left-0 right-0 h-1 bg-linear-to-br ${stat.gradient}`} />
             <CardHeader className="flex flex-row items-center justify-between pb-2">
               <CardTitle className="text-sm font-semibold text-slate-700">{stat.title}</CardTitle>
               <div
@@ -123,7 +135,7 @@ const loadDashboardData = async () => {
       </div>
 
       {stats.underRepair > 0 && (
-        <Card className="bg-linear-to-r from-amber-50 to-yellow-50 border-2 border-amber-200 mb-6 shadow-md">
+        <Card className="bg-linear-to-br from-amber-50 to-yellow-50 border-2 border-amber-200 mb-6 shadow-md">
           <CardContent className="py-4 flex items-center gap-3">
             <div className="h-10 w-10 rounded-full bg-amber-100 flex items-center justify-center">
               <AlertCircle className="h-5 w-5 text-amber-600" />
@@ -155,7 +167,7 @@ const loadDashboardData = async () => {
                 {recentAssignments.map((assignment) => (
                   <div
                     key={assignment.id}
-                    className="flex items-center justify-between p-4 bg-linear-to-r from-slate-50 to-blue-50/50 rounded-xl hover:shadow-md transition-all cursor-pointer border border-slate-200/50"
+                    className="flex items-center justify-between p-4 bg-linear-to-br from-slate-50 to-blue-50/50 rounded-xl hover:shadow-md transition-all cursor-pointer border border-slate-200/50"
                     onClick={() => router.push(`/admin/devices/${assignment.deviceId}`)}
                   >
                     <div className="flex-1 min-w-0">
@@ -165,9 +177,10 @@ const loadDashboardData = async () => {
                       <p className="text-sm text-slate-600">Assigned to {assignment.employee?.name}</p>
                     </div>
                     <div className="text-right ml-4">
-                      <p className="text-xs text-slate-500">{new Date(assignment.assignedDate).toLocaleDateString()}</p>
+                      <p className="text-xs text-slate-500">{new Date(assignment.
+AllocatedDate).toLocaleDateString()}</p>
                       {!assignment.returnDate && (
-                        <span className="text-xs px-2 py-1 bg-linear-to-r from-[#1e4d7b] to-[#2563a8] text-white rounded-full shadow-sm">
+                        <span className="text-xs px-2 py-1 bg-linear-to-br from-[#1e4d7b] to-[#2563a8] text-white rounded-full shadow-sm">
                           Active
                         </span>
                       )}
@@ -198,7 +211,7 @@ const loadDashboardData = async () => {
                     <div className="flex items-center gap-3">
                       <div className="w-32 h-3 bg-slate-200 rounded-full overflow-hidden shadow-inner">
                         <div
-                          className="h-full bg-linear-to-r from-[#1e4d7b] to-[#2563a8] rounded-full shadow-sm"
+                          className="h-full bg-linear-to-br from-[#1e4d7b] to-[#2563a8] rounded-full shadow-sm"
                           style={{
                             width: `${(item.count / stats.totalDevices) * 100}%`,
                           }}
@@ -222,21 +235,21 @@ const loadDashboardData = async () => {
           <CardContent className="space-y-2">
             <button
               onClick={() => router.push("/admin/devices/add")}
-              className="w-full text-left p-4 bg-linear-to-r from-[#1e4d7b]/10 to-[#2563a8]/10 hover:from-[#1e4d7b]/20 hover:to-[#2563a8]/20 rounded-xl transition-all border border-[#1e4d7b]/20 hover:shadow-md"
+              className="w-full text-left p-4 bg-linear-to-br from-[#1e4d7b]/10 to-[#2563a8]/10 hover:from-[#1e4d7b]/20 hover:to-[#2563a8]/20 rounded-xl transition-all border border-[#1e4d7b]/20 hover:shadow-md"
             >
               <p className="font-semibold text-[#1e4d7b]">Add New Device</p>
               <p className="text-sm text-slate-600">Register hardware asset</p>
             </button>
             <button
               onClick={() => router.push("/admin/employees/add")}
-              className="w-full text-left p-4 bg-linear-to-r from-purple-50 to-pink-50 hover:from-purple-100 hover:to-pink-100 rounded-xl transition-all border border-purple-200 hover:shadow-md"
+              className="w-full text-left p-4 bg-linear-to-br from-purple-50 to-pink-50 hover:from-purple-100 hover:to-pink-100 rounded-xl transition-all border border-purple-200 hover:shadow-md"
             >
               <p className="font-semibold text-purple-700">Add Employee</p>
               <p className="text-sm text-slate-600">Register staff member</p>
             </button>
             <button
               onClick={() => router.push("/admin/logs")}
-              className="w-full text-left p-4 bg-linear-to-r from-slate-50 to-slate-100 hover:from-slate-100 hover:to-slate-200 rounded-xl transition-all border border-slate-200 hover:shadow-md"
+              className="w-full text-left p-4 bg-linear-to-br from-slate-50 to-slate-100 hover:from-slate-100 hover:to-slate-200 rounded-xl transition-all border border-slate-200 hover:shadow-md"
             >
               <p className="font-semibold text-slate-700">View Assignment Logs</p>
               <p className="text-sm text-slate-600">Track all assignments</p>
@@ -260,7 +273,7 @@ const loadDashboardData = async () => {
                 </div>
                 <div className="w-full h-3 bg-slate-200 rounded-full overflow-hidden shadow-inner">
                   <div
-                    className="h-full bg-linear-to-r from-[#1e4d7b] to-[#2563a8] rounded-full shadow-sm"
+                    className="h-full bg-linear-to-br from-[#1e4d7b] to-[#2563a8] rounded-full shadow-sm"
                     style={{
                       width: `${stats.totalDevices > 0 ? (stats.assignedDevices / stats.totalDevices) * 100 : 0}%`,
                     }}
@@ -278,7 +291,7 @@ const loadDashboardData = async () => {
                 </div>
                 <div className="w-full h-3 bg-emerald-200 rounded-full overflow-hidden shadow-inner">
                   <div
-                    className="h-full bg-linear-to-r from-emerald-500 to-teal-500 rounded-full shadow-sm"
+                    className="h-full bg-linear-to-br from-emerald-500 to-teal-500 rounded-full shadow-sm"
                     style={{
                       width: `${stats.totalEmployees > 0 ? (stats.activeEmployees / stats.totalEmployees) * 100 : 0}%`,
                     }}

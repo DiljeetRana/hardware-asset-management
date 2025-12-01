@@ -3,6 +3,7 @@ import mongoose, { Schema, Document } from "mongoose";
 export interface IEmployee extends Document {
   name: string;
   email: string;
+  password: string;
   position: string;
   department: string;
   hireDate: Date;
@@ -81,9 +82,12 @@ const EmployeeSchema: Schema = new Schema(
       type: Boolean,
       default: false,
     },
-     role: { type: String, enum: ["admin", "employee"], default: "employee" },
+    role: {
+      type: String, enum: ["admin", "employee"], default: "employee"
+    },
+    password: { type: String,required:false }
   },
-  
+
   { timestamps: true }
 );
 

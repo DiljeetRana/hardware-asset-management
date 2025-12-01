@@ -105,6 +105,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     setUser(null);
     setRole(null);
     window.location.href = "/login";
+    
   }
 };
 

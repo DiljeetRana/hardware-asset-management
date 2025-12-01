@@ -43,7 +43,7 @@ export default function HomePage() {
                 </Button>
               </Link>
               <Link href="/login">
-                <Button className="bg-gradient-to-r from-[#005A9C] to-[#0077CC] hover:from-[#004080] hover:to-[#005A9C] text-white shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105">
+                <Button className="bg-linear-to-br from-[#005A9C] to-[#0077CC] hover:from-[#004080] hover:to-[#005A9C] text-white shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105">
                   Get Started
                   <ArrowRight className="ml-2 h-4 w-4" />
                 </Button>
@@ -70,14 +70,14 @@ export default function HomePage() {
               className={`space-y-8 transition-all duration-1000 ${isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-10"}`}
             >
               <div className="inline-block">
-                <span className="bg-gradient-to-r from-[#005A9C] to-[#0077CC] text-white px-4 py-2 rounded-full text-sm font-medium shadow-lg animate-fade-in">
+                <span className="bg-linear-to-br from-[#005A9C] to-[#0077CC] text-white px-4 py-2 rounded-full text-sm font-medium shadow-lg animate-fade-in">
                   Hardware Asset Management Solution
                 </span>
               </div>
 
               <h1 className="text-5xl sm:text-6xl lg:text-7xl font-bold text-gray-900 leading-tight">
                 Manage Your
-                <span className="block bg-gradient-to-r from-[#005A9C] to-[#0077CC] bg-clip-text text-transparent animate-gradient">
+                <span className="block bg-linear-to-br from-[#005A9C] to-[#0077CC] bg-clip-text text-transparent animate-gradient">
                   IT Assets
                 </span>
                 Effortlessly
@@ -92,7 +92,7 @@ export default function HomePage() {
                 <Link href="/login">
                   <Button
                     size="lg"
-                    className="bg-gradient-to-r from-[#005A9C] to-[#0077CC] hover:from-[#004080] hover:to-[#005A9C] text-white shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105 text-lg px-8 py-6"
+                    className="bg-linear-to-br from-[#005A9C] to-[#0077CC] hover:from-[#004080] hover:to-[#005A9C] text-white shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105 text-lg px-8 py-6"
                   >
                     Start Managing Assets
                     <ArrowRight className="ml-2 h-5 w-5" />
@@ -227,7 +227,7 @@ export default function HomePage() {
       {/* CTA Section */}
       <section className="py-20 px-4 sm:px-6 lg:px-8 relative" style={{ transform: `translateY(${scrollY * 0.05}px)` }}>
         <div className="max-w-4xl mx-auto">
-          <div className="bg-gradient-to-r from-[#005A9C] to-[#0077CC] rounded-3xl shadow-2xl p-12 sm:p-16 text-center relative overflow-hidden">
+          <div className="bg-linear-to-br from-[#005A9C] to-[#0077CC] rounded-3xl shadow-2xl p-12 sm:p-16 text-center relative overflow-hidden">
             <div className="absolute inset-0 opacity-10">
               <div className="absolute top-0 left-0 w-64 h-64 bg-white rounded-full filter blur-3xl animate-pulse"></div>
               <div className="absolute bottom-0 right-0 w-64 h-64 bg-white rounded-full filter blur-3xl animate-pulse delay-1000"></div>
@@ -280,7 +280,7 @@ export default function HomePage() {
                   <Link href="/login">
                     <Button
                       onClick={() => setShowDemo(false)}
-                      className="bg-gradient-to-r from-[#005A9C] to-[#0077CC] hover:from-[#004080] hover:to-[#005A9C] text-white shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 mt-4"
+                      className="bg-linear-to-br from-[#005A9C] to-[#0077CC] hover:from-[#004080] hover:to-[#005A9C] text-white shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 mt-4"
                     >
                       Try It Now
                       <ArrowRight className="ml-2 h-4 w-4" />

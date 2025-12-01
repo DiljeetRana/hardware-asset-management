@@ -1,41 +1,65 @@
 "use client"
 
-import { useEffect, useState,useMemo } from "react"
+import { useEffect, useState, useMemo, useCallback } from "react"
 import { Card, CardContent } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Search, Calendar, User, Laptop, ArrowRight } from "lucide-react"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { useRouter } from "next/navigation"
-import { useDataStore } from "@/lib/hooks/use-data-store"
+import { useToast } from "@/hooks/use-toast"
 
 export default function AssignmentLogsPage() {
-  const { assignments: allAssignments, devices, employees } = useDataStore()
+  const [assignments, setAssignments] = useState<any[]>([])
   const [filteredAssignments, setFilteredAssignments] = useState<any[]>([])
   const [searchTerm, setSearchTerm] = useState("")
   const [filterStatus, setFilterStatus] = useState("all")
   const [filterType, setFilterType] = useState("all")
   const router = useRouter()
+  const { toast } = useToast()
 
-  
-const enrichedAssignments = useMemo(() => {
-  return allAssignments
-    .map((a: any) => {
-      const device = devices.find((d: any) => d.id === a.deviceId)
-      const employee = employees.find((e: any) => e.id === a.employeeId)
-      return {
-        ...a,
-        device,
-        employee,
-        isActive: !a.returnDate,
+  // Fetch all assignments with employee and device populated
+  const fetchAssignments = useCallback(async () => {
+    try {
+      const res = await fetch("/api/admin/allocation-log")
+      const data = await res.json()
+      if (data.success) {
+        setAssignments(data.allocations)
+      } else {
+        toast({
+          title: "Error",
+          description: "Failed to fetch assignment logs",
+          variant: "destructive",
+        })
       }
-    })
-    .sort(
-      (a: any, b: any) =>
-        new Date(b.assignedDate).getTime() - new Date(a.assignedDate).getTime()
-    )
-}, [allAssignments, devices, employees])
+    } catch (err) {
+      console.error("Error fetching assignments:", err)
+      toast({
+        title: "Error",
+        description: "Failed to fetch assignment logs",
+        variant: "destructive",
+      })
+    }
+  }, [toast])
 
+  useEffect(() => {
+    fetchAssignments()
+  }, [fetchAssignments])
 
+  // Enrich assignments for easier rendering
+  const enrichedAssignments = useMemo(() => {
+    return assignments
+      .map((a) => ({
+        ...a,
+        device: a.resource,
+        employee: a.employee,
+        isActive: !a.returnDate,
+        assignedDate: a.AllocatedDate,
+      }))
+      .sort(
+        (a, b) =>
+          new Date(b.assignedDate).getTime() - new Date(a.assignedDate).getTime()
+      )
+  }, [assignments])
 
   useEffect(() => {
     applyFilters()
@@ -50,26 +74,20 @@ const enrichedAssignments = useMemo(() => {
           a.employee?.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
           a.device?.brand.toLowerCase().includes(searchTerm.toLowerCase()) ||
           a.device?.modelName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          a.device?.assetTag.toLowerCase().includes(searchTerm.toLowerCase()),
+          a.device?.assetTag.toLowerCase().includes(searchTerm.toLowerCase())
       )
     }
 
-    if (filterStatus === "active") {
-      filtered = filtered.filter((a) => a.isActive)
-    } else if (filterStatus === "returned") {
-      filtered = filtered.filter((a) => !a.isActive)
-    }
+    if (filterStatus === "active") filtered = filtered.filter((a) => a.isActive)
+    else if (filterStatus === "returned") filtered = filtered.filter((a) => !a.isActive)
 
-    if (filterType !== "all") {
-      filtered = filtered.filter((a) => a.device?.deviceType === filterType)
-    }
+    if (filterType !== "all") filtered = filtered.filter((a) => a.device?.deviceType === filterType)
 
     setFilteredAssignments(filtered)
   }
 
-  const getStatusBadge = (isActive: boolean) => {
-    return isActive ? "bg-blue-100 text-blue-700 border-blue-200" : "bg-gray-100 text-gray-700 border-gray-200"
-  }
+  const getStatusBadge = (isActive: boolean) =>
+    isActive ? "bg-blue-100 text-blue-700 border-blue-200" : "bg-gray-100 text-gray-700 border-gray-200"
 
   return (
     <div className="p-8">
@@ -81,17 +99,16 @@ const enrichedAssignments = useMemo(() => {
       <Card className="bg-white border-gray-200 mb-6 shadow-sm">
         <CardContent className="pt-6">
           <div className="grid gap-4 md:grid-cols-4">
-            <div className="md:col-span-2">
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-                <Input
-                  placeholder="Search assignments..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10 bg-gray-50 border-gray-200"
-                />
-              </div>
+            <div className="md:col-span-2 relative">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+              <Input
+                placeholder="Search assignments..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-10 bg-gray-50 border-gray-200"
+              />
             </div>
+
             <Select value={filterStatus} onValueChange={setFilterStatus}>
               <SelectTrigger className="bg-gray-50 border-gray-200">
                 <SelectValue placeholder="Status" />
@@ -102,6 +119,7 @@ const enrichedAssignments = useMemo(() => {
                 <SelectItem value="returned">Returned</SelectItem>
               </SelectContent>
             </Select>
+
             <Select value={filterType} onValueChange={setFilterType}>
               <SelectTrigger className="bg-gray-50 border-gray-200">
                 <SelectValue placeholder="Device Type" />
@@ -122,7 +140,7 @@ const enrichedAssignments = useMemo(() => {
       <div className="space-y-4">
         {filteredAssignments.map((assignment) => (
           <Card
-            key={assignment.id}
+            key={assignment._id}
             className="bg-white border-gray-200 hover:border-blue-300 transition-colors shadow-sm"
           >
             <CardContent className="pt-6">
@@ -142,9 +160,7 @@ const enrichedAssignments = useMemo(() => {
                     <div className="flex items-center gap-2">
                       <Laptop className="h-4 w-4 text-green-600" />
                       <div>
-                        <p className="text-gray-900 font-medium">
-                          {assignment.device?.brand} {assignment.device?.modelName}
-                        </p>
+                        <p className="text-gray-900 font-medium">{assignment.device?.brand} {assignment.device?.modelName}</p>
                         <p className="text-xs text-gray-500">{assignment.device?.assetTag}</p>
                       </div>
                     </div>
@@ -177,14 +193,14 @@ const enrichedAssignments = useMemo(() => {
                   </span>
                   <div className="flex gap-1">
                     <button
-                      onClick={() => router.push(`/admin/devices/${assignment.deviceId}`)}
+                      onClick={() => router.push(`/admin/devices/${assignment.device._id}`)}
                       className="text-xs text-blue-600 hover:underline"
                     >
                       View Device
                     </button>
                     <span className="text-gray-400">•</span>
                     <button
-                      onClick={() => router.push(`/admin/employees/${assignment.employeeId}`)}
+                      onClick={() => router.push(`/admin/employees/${assignment.employee._id}`)}
                       className="text-xs text-blue-600 hover:underline"
                     >
                       View Employee

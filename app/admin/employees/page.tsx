@@ -31,23 +31,33 @@ export default function EmployeesPage() {
   const router = useRouter()
 
 
- const fetchEmployees = async () => {
-      try {
-        const res = await fetch("/api/admin/employee")
-        if (!res.ok) throw new Error("Failed to fetch device types")
-        const data: Employee[] = await res.json()
-      
-      console.log("Fetched employees:", data);
-        setEmployees(data)
-      } catch (error) {
-        console.error(error)
-        toast({
-          title: "Error",
-          description: error instanceof Error ? error.message : "Something went wrong",
-          variant: "destructive",
-        })
-      }
-    }
+
+
+
+const fetchEmployees = async () => {
+  try {
+    const res = await fetch("/api/admin/employee")
+    if (!res.ok) throw new Error("Failed to fetch employees")
+    
+    const data = await res.json() // raw backend array
+    console.log("Fetched employees:", data);
+
+    // Map _id to id for frontend usage
+    const mappedEmployees = data.map((emp: any) => ({
+      ...emp,
+      id: emp._id,  // <-- important fix
+    }))
+
+    setEmployees(mappedEmployees)
+  } catch (error) {
+    console.error(error)
+    toast({
+      title: "Error",
+      description: error instanceof Error ? error.message : "Something went wrong",
+      variant: "destructive",
+    })
+  }
+}
 
   // Fetch device types with counts
   useEffect(() => {
@@ -97,7 +107,7 @@ const status=["Active", "Inactive"];
     <div className="p-4 sm:p-6 lg:p-8">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6 lg:mb-8">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-bold bg-linear-to-r from-[#1e4d7b] to-[#2563a8] bg-clip-text text-transparent mb-2">
+          <h1 className="text-2xl sm:text-3xl font-bold bg-linear-to-br from-[#1e4d7b] to-[#2563a8] bg-clip-text text-transparent mb-2">
             Employees
           </h1>
           <p className="text-sm sm:text-base text-muted-foreground">Manage staff members and assignments</p>

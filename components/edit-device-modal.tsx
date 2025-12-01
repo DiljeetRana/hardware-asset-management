@@ -19,14 +19,76 @@ interface EditDeviceModalProps {
   onOpenChange: (open: boolean) => void
   onUpdate: (id: string, updates: Partial<Device>) => void
 }
+interface DeviceTypeWithCount {
+  _id: string
+  type: string
+  totalDevices: number
+  description?: string
+}
 
 export function EditDeviceModal({ device, open, onOpenChange, onUpdate }: EditDeviceModalProps) {
   const { toast } = useToast()
   const [formData, setFormData] = useState(device)
+    const [deviceTypes, setDeviceTypes] = useState<DeviceTypeWithCount[]>([])
 
-  useEffect(() => {
-    setFormData(device)
-  }, [device])
+  // useEffect(() => {
+  //   setFormData(device)
+   
+  // }, [device])
+useEffect(() => {
+    if (open && device) {
+      console.log("🔍 Initializing formData with device:", device)
+      
+      const initialFormData = {
+        name: device.name || '',
+        brand: device.brand || '',
+        modelName: device.modelName || '',
+        serialNumber: device.serialNumber || '',
+        assetTag: device.assetTag || '',
+        status: device.status || 'Available',
+        purchaseCost: device.purchaseCost || 0,
+        purchaseDate: device.purchaseDate ? 
+          new Date(device.purchaseDate).toISOString().split('T')[0] : '',
+        warrantyExpiryDate: device.warrantyExpiryDate ? 
+          new Date(device.warrantyExpiryDate).toISOString().split('T')[0] : '',
+        vendorName: device.vendorName || '',
+        processor: device.processor || '',
+        ram: device.ram || '',
+        storage: device.storage || '',
+        os: device.os || '',
+        notes: device.notes || '',
+        // ✅ FIXED: Store BOTH ID and NAME
+        resourceTypeId: device.resourceType?._id || '',
+        resourceTypeName: device.resourceType?.name || 'Unknown'  //
+      }
+
+      console.log("✅ formData initialized with ResourceType:", initialFormData)
+      setFormData(initialFormData)
+    }
+  }, [device, open])
+
+   const fetchDeviceTypes = async () => {
+      try {
+        const res = await fetch("/api/admin/resource-type")
+        if (!res.ok) throw new Error("Failed to fetch device types")
+        const data: DeviceTypeWithCount[] = await res.json()
+  
+        console.log("Fetched device types:", data);
+        setDeviceTypes(data)
+      } catch (error) {
+        console.error(error)
+        toast({
+          title: "Error",
+          description: error instanceof Error ? error.message : "Something went wrong",
+          variant: "destructive",
+        })
+      }
+    }
+  
+    // Fetch device types with counts
+    useEffect(() => {
+      fetchDeviceTypes()
+    }, [])
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value })
@@ -70,19 +132,20 @@ export function EditDeviceModal({ device, open, onOpenChange, onUpdate }: EditDe
                   <Label htmlFor="edit-deviceType" className="text-slate-200">
                     Device Type
                   </Label>
-                  <Select
-                    value={formData.deviceType}
-                    onValueChange={(value) => handleSelectChange("deviceType", value)}
-                  >
+                  <Select 
+              value={formData.resourceTypeId || ''} 
+              onValueChange={(value) => handleSelectChange("resourceTypeId", value)}
+            >
                     <SelectTrigger className="bg-slate-900/50 border-slate-600 text-white">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="Laptop">Laptop</SelectItem>
-                      <SelectItem value="Desktop">Desktop</SelectItem>
-                      <SelectItem value="Mobile">Mobile</SelectItem>
-                      <SelectItem value="Tablet">Tablet</SelectItem>
-                      <SelectItem value="Peripheral">Peripheral</SelectItem>
+                      {deviceTypes.map((type) => (
+                                               // ✅ FIXED: Use type._id instead of type.type
+                                               <SelectItem key={type._id} value={type._id}>
+                                                 {type.type}
+                                               </SelectItem>
+                                             ))}
                     </SelectContent>
                   </Select>
                 </div>

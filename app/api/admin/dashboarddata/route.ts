@@ -1,9 +1,9 @@
 import connectDB from "@/lib/connection";
 import Employee from "@/models/employee";
-import Resource from "@/models/resource";
 import ResourceType from "@/models/resourcetype";
 import Allocation from "@/models/allocation";   // your allocation model
 import { NextResponse } from "next/server";
+import Resource from "@/models/resource";
 
 export async function GET() {
   try {
@@ -14,21 +14,48 @@ export async function GET() {
     // Count Active employees
     const activeEmployees = await Employee.countDocuments({ status: "Active" });
 
+// Total Devices
+const totalDevicesAgg = await Resource.aggregate([
+  { $group: { _id: null, total: { $sum: "$totalResourceCount" } } },
+]);
+const totalDevices = totalDevicesAgg[0]?.total || 0;
 
-    // Total Devices
-    const totalDevicesAgg = await Resource.aggregate([
-      { $group: { _id: null, total: { $sum: "$totalResourceCount" } } },
-    ]);
-    const totalDevices = totalDevicesAgg[0]?.total || 0;
+// Correct Available Devices
+const availableDevicesAgg = await Resource.aggregate([
+  { $group: { _id: null, total: { $sum: "$availableResourceCount" } } },
+]);
+const availableDevices = availableDevicesAgg[0]?.total || 0;
 
-    // Available Devices
-    const availableDevicesAgg = await Resource.aggregate([
-      { $group: { _id: null, total: { $sum: "$avaliableResourceCount" } } },
-    ]);
-    const availableDevices = availableDevicesAgg[0]?.total || 0;
+// Correct Assigned Devices = total - available
+const assignedDevices = totalDevices - availableDevices;
 
-    // Assigned Devices
-    const assignedDevices = totalDevices - availableDevices;
+
+// // Count active allocations (Allocated)
+// const activeAllocations = await Allocation.countDocuments({
+//   status: "Allocated"
+// });
+
+// // Assigned devices = number of active allocations
+// const assignedDevices = activeAllocations;
+
+// // Available devices = total - assigned
+// const availableDevices = totalDevices - assignedDevices;
+
+    // // Total Devices
+    // const totalDevicesAgg = await Resource.aggregate([
+    //   { $group: { _id: null, total: { $sum: "$totalResourceCount" } } },
+    // ]);
+    // const totalDevices = totalDevicesAgg[0]?.total || 0;
+
+
+    // // Available Devices
+    // const availableDevicesAgg = await Resource.aggregate([
+    //   { $group: { _id: null, total: { $sum: "$avaliableResourceCount" } } },
+    // ]);
+    // const availableDevices = availableDevicesAgg[0]?.total || 0;
+
+    // // Assigned Devices
+    // const assignedDevices = totalDevices - availableDevices;
 
     // Devices by Type
     const devicesByType = await Resource.aggregate([
@@ -107,82 +134,3 @@ export async function GET() {
 }
 
 
-
-// // app/api/admin/dashboarddata/route.ts
-// import connectDB from "@/lib/connection";
-// import Employee from "@/models/employee";
-// import Resource from "@/models/resource";
-// import ResourceType from "@/models/resourcetype";
-// import Allocation from "@/models/allocation"; 
-// import { NextResponse } from "next/server";
-
-// export async function GET() {
-//   try {
-//     await connectDB();
-
-//     // Total Employees
-//     const totalEmployees = await Employee.countDocuments();
-
-//     // Total Devices
-//     const totalDevicesAgg = await Resource.aggregate([
-//       {
-//         $group: {
-//           _id: null,
-//           total: { $sum: "$totalResourceCount" },
-//         },
-//       },
-//     ]);
-//     const totalDevices = totalDevicesAgg[0]?.total || 0;
-
-//     // Available Devices
-//     const availableDevicesAgg = await Resource.aggregate([
-//       {
-//         $group: {
-//           _id: null,
-//           total: { $sum: "$avaliableResourceCount" },
-//         },
-//       },
-//     ]);
-//     const availableDevices = availableDevicesAgg[0]?.total || 0;
-
-//     // Assigned Devices = total - available
-//     const assignedDevices = totalDevices - availableDevices;
-
-//     // Devices by Type (Laptop, Phone, etc.)
-//     const devicesByType = await Resource.aggregate([
-//       {
-//         $group: {
-//           _id: "$resourceType",
-//           count: { $sum: "$totalResourceCount" },
-//         },
-//       },
-//       {
-//         $lookup: {
-//           from: "resourcetypes",
-//           localField: "_id",
-//           foreignField: "_id",
-//           as: "type",
-//         },
-//       },
-//       { $unwind: "$type" },
-//       {
-//         $project: {
-//           _id: 0,
-//           type: "$type.name",
-//           count: 1,
-//         },
-//       },
-//     ]);
-
-//     return NextResponse.json({
-//       totalEmployees,
-//       totalDevices,
-//       availableDevices,
-//       assignedDevices,
-//       devicesByType,
-//     });
-//   } catch (error) {
-//     console.error("Dashboard data error:", error);
-//     return NextResponse.json({ error: "Server error" }, { status: 500 });
-//   }
-// }

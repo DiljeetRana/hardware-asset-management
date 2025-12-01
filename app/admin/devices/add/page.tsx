@@ -2,7 +2,7 @@
 
 import type React from "react"
 
-import { useState,useEffect} from "react"
+import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -16,7 +16,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { ImageUpload } from "@/components/image-upload"
 import { useDataStore } from "@/lib/hooks/use-data-store"
 interface DeviceTypeWithCount {
-  _id: string  
+  _id: string
   type: string
   totalDevices: number
   description?: string
@@ -59,28 +59,28 @@ export default function AddDevicePage() {
 
 
   const fetchDeviceTypes = async () => {
-        try {
-          const res = await fetch("/api/admin/resource-type")
-          if (!res.ok) throw new Error("Failed to fetch device types")
-          const data: DeviceTypeWithCount[] = await res.json()
-        
-        console.log("Fetched device types:", data);
-          setDeviceTypes(data)
-        } catch (error) {
-          console.error(error)
-          toast({
-            title: "Error",
-            description: error instanceof Error ? error.message : "Something went wrong",
-            variant: "destructive",
-          })
-        }
-      }
-  
-    // Fetch device types with counts
-    useEffect(() => {
-      fetchDeviceTypes()
-    }, [])
-  
+    try {
+      const res = await fetch("/api/admin/resource-type")
+      if (!res.ok) throw new Error("Failed to fetch device types")
+      const data: DeviceTypeWithCount[] = await res.json()
+
+      console.log("Fetched device types:", data);
+      setDeviceTypes(data)
+    } catch (error) {
+      console.error(error)
+      toast({
+        title: "Error",
+        description: error instanceof Error ? error.message : "Something went wrong",
+        variant: "destructive",
+      })
+    }
+  }
+
+  // Fetch device types with counts
+  useEffect(() => {
+    fetchDeviceTypes()
+  }, [])
+
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value })
@@ -90,30 +90,58 @@ export default function AddDevicePage() {
     setFormData({ ...formData, [name]: value })
   }
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
-    setIsSubmitting(true)
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSubmitting(true);
 
-    const id = `DEV${String(Date.now()).slice(-6)}`
+    try {
+      // Generate device ID
+      const id = `DEV${String(Date.now()).slice(-6)}`;
 
-    const newDevice = {
-      id,
-      ...formData,
-      purchaseCost: Number.parseFloat(formData.purchaseCost) || 0,
-      images,
+      const submitData = {
+        id,
+        ...formData,
+        purchaseCost: Number.parseFloat(formData.purchaseCost) || 0,
+        images,
+      };
+
+      // Call the actual API
+      const response = await fetch("/api/admin/devices", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(submitData),
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.error || "Failed to add device");
+      }
+
+      toast({
+        title: "Success!",
+        description: `${formData.brand} ${formData.modelName} has been added successfully`,
+      });
+
+      // Redirect after success
+      setTimeout(() => {
+        router.push("/admin/devices");
+      }, 1500);
+
+    } catch (error) {
+      console.error("Error adding device:", error);
+      toast({
+        title: "Error",
+        description: error instanceof Error ? error.message : "Failed to add device",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSubmitting(false);
     }
+  };
 
-    
-
-    toast({
-      title: "Device Added",
-      description: `${formData.brand} ${formData.modelName} has been added successfully`,
-    })
-
-    setTimeout(() => {
-      router.push("/admin/devices")
-    }, 1000)
-  }
   const statusOptions = ["all", "Available", "Assigned", "Under Repair", "Retired", "Lost"]
   return (
     <div className="p-4 md:p-8 animate-fadeIn">
@@ -161,10 +189,11 @@ export default function AddDevicePage() {
                       </SelectTrigger>
                       <SelectContent>
                         {deviceTypes.map((type) => (
-      <SelectItem key={type._id} value={type.type}>
-        {type.type}
-      </SelectItem>
-    ))}
+                          // ✅ FIXED: Use type._id instead of type.type
+                          <SelectItem key={type._id} value={type._id}>
+                            {type.type}
+                          </SelectItem>
+                        ))}
                       </SelectContent>
                     </Select>
                   </div>
@@ -323,12 +352,12 @@ export default function AddDevicePage() {
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
-                        
-                                         {statusOptions.map((status) => (
-                              <SelectItem key={status} value={status}>
-                                {status === "all" ? "All Status" : status}
-                              </SelectItem>
-                            ))}
+
+                        {statusOptions.map((status) => (
+                          <SelectItem key={status} value={status}>
+                            {status === "all" ? "All Status" : status}
+                          </SelectItem>
+                        ))}
                       </SelectContent>
                     </Select>
                   </div>

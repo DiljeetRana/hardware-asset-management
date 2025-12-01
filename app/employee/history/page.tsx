@@ -90,7 +90,7 @@ export default function EmployeeHistoryPage() {
               >
                 <CardContent className="pt-6">
                   <div className="flex items-start gap-4">
-                    <div className="h-12 w-12 rounded-lg bg-blue-100 flex items-center justify-center flex-shrink-0">
+                    <div className="h-12 w-12 rounded-lg bg-blue-100 flex items-center justify-center shrink-0">
                       <Icon className="h-6 w-6 text-blue-600" />
                     </div>
 

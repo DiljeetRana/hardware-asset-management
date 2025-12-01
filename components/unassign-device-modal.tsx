@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import {
   Dialog,
   DialogContent,
@@ -14,13 +14,13 @@ import { Label } from "@/components/ui/label"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { useToast } from "@/hooks/use-toast"
-import { useDataStore } from "@/lib/hooks/use-data-store"
+
 
 interface UnassignDeviceModalProps {
   open: boolean
   onOpenChange: (open: boolean) => void
   device: any
-  assignment: any
+  assignment: any 
   onUnassigned: () => void
 }
 
@@ -32,26 +32,71 @@ export function UnassignDeviceModal({
   onUnassigned,
 }: UnassignDeviceModalProps) {
   const { toast } = useToast()
-  const { unassignDevice } = useDataStore()
   const [returnDate, setReturnDate] = useState(new Date().toISOString().split("T")[0])
   const [notes, setNotes] = useState("")
   const [isSubmitting, setIsSubmitting] = useState(false)
 
-  const handleSubmit = () => {
-    setIsSubmitting(true)
 
-    unassignDevice(device.id)
+  useEffect(() => {
+  console.log("ASSIGNMENT PASSED TO MODAL --->", assignment);
+}, [assignment]);
 
-    toast({
-      title: "Device Unassigned",
-      description: `${device.brand} ${device.modelName} has been returned`,
-    })
 
-    setIsSubmitting(false)
-    setNotes("")
-    onOpenChange(false)
-    onUnassigned()
+  useEffect(()=>{
+    console.log("DEVICE PASSED TO MODAL --->", device);
+
+  },[]);
+
+  if (!assignment) {
+    return (
+      <Dialog open={open} onOpenChange={onOpenChange}>
+        <DialogContent className="bg-slate-800 border-slate-700 text-white">
+          <p className="text-red-400">No assignment found for this device.</p>
+        </DialogContent>
+      </Dialog>
+    );
   }
+  
+  const handleSubmit = async () => {
+    setIsSubmitting(true);
+ console.log("ID SENT:", `"${assignment.id}"`);
+    try {
+      const res = await fetch(
+        `/api/admin/allocation/${assignment.id}`,
+        {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            returnDate,
+            notes,
+            status: "Returned"
+          })
+        }
+      );
+
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.error || "Failed to unassign device");
+      }
+
+      toast({
+        title: "Device Returned",
+        description: `${device.brand} ${device.modelName} has been returned`,
+      });
+
+      onUnassigned();
+      onOpenChange(false);
+      setNotes("");
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: error instanceof Error ? error.message : "Something went wrong",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
