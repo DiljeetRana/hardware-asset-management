@@ -5,6 +5,39 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Laptop, Smartphone, Monitor, Package, Calendar, History } from "lucide-react"
 import { useRouter } from "next/navigation"
 
+interface Device {
+  id: string
+  _id: string
+  name: string
+  brand: string
+  modelName: string
+  serialNumber: string
+  assetTag: string
+  status: string
+  purchaseCost: number
+  purchaseDate: string
+  warrantyStatus?: string
+  warrantyExpiryDate: string
+  availableResourceCount: number
+  totalResourceCount: number
+  resourceType: {
+    _id: string
+    type: string
+  }
+  images: any[]
+  createdAt: string
+  updatedAt: string
+}
+
+interface Assignment {
+  id: string;
+  employee: string;       // employeeId
+  resource: string;       // resourceId
+  AllocatedDate: string;
+  returnDate?: string | null;
+  status: string;
+}
+
 export default function EmployeeDashboard() {
   const [userName, setUserName] = useState("")
   const [assignedDevices, setAssignedDevices] = useState<any[]>([])
@@ -14,31 +47,55 @@ export default function EmployeeDashboard() {
     returnedDevices: 0,
   })
   const router = useRouter()
+useEffect(() => {
+  async function loadData() {
+    try {
+      // 1️⃣ Fetch logged-in profile
+      const profileRes = await fetch("/api/profile", { credentials: "include" });
+      const profile = await profileRes.json();
+      console.log("PROFILE RESPONSE:", profile);
 
-  useEffect(() => {
-    const name = localStorage.getItem("userName") || "Employee"
-    const userId = localStorage.getItem("userId") || ""
-    setUserName(name)
 
-    // Load assigned devices
-    const assignments = JSON.parse(localStorage.getItem("assignments") || "[]")
-    const devices = JSON.parse(localStorage.getItem("devices") || "[]")
+      if (!profile.id) return;
 
-    const myAssignments = assignments.filter((a: any) => a.employeeId === userId)
-    const activeAssignments = myAssignments.filter((a: any) => !a.returnDate)
+      setUserName(profile.name || "Employee"); // fixed
 
-    const myDevices = activeAssignments.map((a: any) => {
-      const device = devices.find((d: any) => d.id === a.deviceId)
-      return { ...device, assignedDate: a.assignedDate }
-    })
+      const employeeId = profile.id;
+      console.log("user id from frontned:",employeeId);
+      console.log("use name is:",profile.name);
 
-    setAssignedDevices(myDevices)
-    setStats({
-      totalAssignments: myAssignments.length,
-      activeDevices: activeAssignments.length,
-      returnedDevices: myAssignments.length - activeAssignments.length,
-    })
-  }, [])
+      // 2️⃣ Fetch employee assignments
+      const allocRes = await fetch(`/api/employee/allocation/${employeeId}`);
+      const allocData = await allocRes.json();
+
+      const assignments: Assignment[] = allocData.data|| [];
+      console.log("assignments for the user:",assignments);
+
+      const active = assignments.filter((a) => !a.returnDate);
+      const returned = assignments.filter((a) => a.returnDate);
+
+      setStats({
+        totalAssignments: assignments.length,
+        activeDevices: active.length,
+        returnedDevices: returned.length,
+      });
+
+      // Map devices safely (resource must be populated in backend)
+      const devices = active.map((a) => ({
+        ...a.resource,
+        assignedDate: a.AllocatedDate,
+      }));
+
+      setAssignedDevices(devices);
+    } catch (err) {
+      console.error("Dashboard load error:", err);
+    }
+  }
+
+  loadData();
+}, []);
+
+
 
   const getDeviceIcon = (type: string) => {
     switch (type) {

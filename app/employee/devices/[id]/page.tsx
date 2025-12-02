@@ -8,28 +8,82 @@ import { ArrowLeft, Laptop, Monitor, Smartphone, Tablet, Package, Calendar, Shie
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 
 export default function EmployeeDeviceDetailPage() {
-  const params = useParams()
   const router = useRouter()
   const [device, setDevice] = useState<any>(null)
   const [assignment, setAssignment] = useState<any>(null)
+  const params = useParams()
+  const deviceId = params.id;
 
-  useEffect(() => {
-    loadDevice()
-  }, [params.id])
+useEffect(() => {
+  if (!deviceId) return; // safeguard
+  console.log("employee/device/id:", deviceId);
+  loadDevice();
+}, [deviceId]); // use deviceId here
 
-  const loadDevice = () => {
-    const userId = localStorage.getItem("userId") || ""
-    const devices = JSON.parse(localStorage.getItem("devices") || "[]")
-    const assignments = JSON.parse(localStorage.getItem("assignments") || "[]")
+const loadDevice = async () => {
+  if (!deviceId) return;
 
-    const found = devices.find((d: any) => d.id === params.id)
-    const myAssignment = assignments.find(
-      (a: any) => a.deviceId === params.id && a.employeeId === userId && !a.returnDate,
-    )
+  try {
+    //  Fetch device details
+    const deviceRes = await fetch(`/api/admin/devices/${deviceId}`);
+    const deviceData = await deviceRes.json();
+console.log("Raw device response:", deviceData);
+    //  Fetch current user profile
+    const profileRes = await fetch("/api/profile", { credentials: "include" });
+    const profile = await profileRes.json();
+    if (!profile.id) return;
+    const employeeId = profile.id;
 
-    setDevice(found)
-    setAssignment(myAssignment)
+    //  Fetch allocations for this employee
+    const assignmentRes = await fetch(`/api/employee/allocation/${employeeId}`);
+    const assignmentData = await assignmentRes.json();
+
+    //  Find assignment corresponding to this device
+    const myAssignment = assignmentData.data.find(
+      (a: any) => a.resource._id === deviceId
+    );
+
+    //  Set state
+    setDevice(deviceData.device);
+    setAssignment(myAssignment);
+
+    //  Log after setting state
+    console.log("Device data:", deviceData.data);
+    console.log("Assignment data for this device:", myAssignment);
+
+  } catch (error) {
+    console.error("Error loading device:", error);
   }
+};
+
+//  const loadDevice = async () => {
+//   if (!deviceId) return;
+
+//   try {
+//     //  Fetch device details
+//     const deviceRes = await fetch(`/api/admin/devices/${deviceId}`);
+//     const deviceData = await deviceRes.json();
+
+//     // Fetch assignment details for current user + this device
+   
+//       const profileRes = await fetch("/api/profile", { credentials: "include" });
+//       const profile = await profileRes.json();
+
+//       if (!profile.id) return;
+
+//       const employeeId = profile.id;
+//     const assignmentRes = await fetch(`/api/employee/allocation/${employeeId}`);
+//     const assignmentData = await assignmentRes.json();
+//      console.log("assignment data is :",assignmentData);
+//     // find assignment of this device
+//     const myAssignment = assignmentData.data.find((a: any) => a.resource._id === deviceId);
+//     console.log("devicedata:",device);
+//     setDevice(deviceData.data);        // set device
+//     setAssignment(myAssignment);       // set assignment
+//   } catch (error) {
+//     console.error("Error loading device:", error);
+//   }
+// };
 
   if (!device) {
     return (

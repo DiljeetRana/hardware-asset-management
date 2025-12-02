@@ -4,28 +4,52 @@ import { useEffect, useState } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Laptop, Smartphone, Monitor, Tablet, Package, Calendar, Info } from "lucide-react"
 import { useRouter } from "next/navigation"
-import { useDataStore } from "@/lib/hooks/use-data-store"
+
 
 export default function EmployeeDevicesPage() {
   const [assignedDevices, setAssignedDevices] = useState<any[]>([])
-  const { assignments, devices } = useDataStore()
   const router = useRouter()
+useEffect(()=>{
+  console.log("assignments data:",assignedDevices);
+})
+ 
 
-  useEffect(() => {
-    loadAssignedDevices()
-  }, [assignments, devices])
+useEffect(() => {
+  async function loadDevices() {
+    try {
+      // 1️⃣ Load user profile
+      const profileRes = await fetch("/api/profile", { credentials: "include" });
+      const profile = await profileRes.json();
 
-  const loadAssignedDevices = () => {
-    const userId = localStorage.getItem("userId") || ""
-    const myAssignments = assignments.filter((a: any) => a.employeeId === userId && !a.returnDate)
+      if (!profile.id) return;
 
-    const myDevices = myAssignments.map((a: any) => {
-      const device = devices.find((d: any) => d.id === a.deviceId)
-      return { ...device, assignedDate: a.assignedDate, assignmentNotes: a.notes }
-    })
+      const employeeId = profile.id;
 
-    setAssignedDevices(myDevices)
+      // 2️⃣ Fetch active allocations for this employee
+      const allocRes = await fetch(`/api/employee/allocation/${employeeId}`);
+      const allocData = await allocRes.json();
+
+      const assignments = allocData.data || [];
+
+      // 3️⃣ Only active (not returned)
+      const activeAssignments = assignments.filter((a: any) => !a.returnDate);
+
+      // 4️⃣ Extract populated resource/device
+      const devices = activeAssignments.map((a: any) => ({
+        ...a.resource,              // <--- populated resource from backend
+        assignedDate: a.AllocatedDate,
+        assignmentNotes: a.notes || "",
+      }));
+
+      setAssignedDevices(devices);
+    } catch (error) {
+      console.error("Error loading employee devices:", error);
+    }
   }
+
+  loadDevices();
+}, []);
+
 
   const getDeviceIcon = (type: string) => {
     switch (type) {
@@ -69,7 +93,7 @@ export default function EmployeeDevicesPage() {
               <Card
                 key={device.id}
                 className="bg-white border-gray-200 hover:border-blue-300 transition-colors cursor-pointer shadow-sm"
-                onClick={() => router.push(`/employee/devices/${device.id}`)}
+                onClick={() => router.push(`/employee/devices/${device._id}`)}
               >
                 <CardHeader>
                   <div className="flex items-center justify-between mb-4">

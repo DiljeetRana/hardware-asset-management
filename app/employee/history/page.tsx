@@ -4,34 +4,65 @@ import { useEffect, useState } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Calendar, Laptop, Monitor, Smartphone, Tablet, Package } from "lucide-react"
 import { useRouter } from "next/navigation"
-import { useDataStore } from "@/lib/hooks/use-data-store"
+
 
 export default function EmployeeHistoryPage() {
   const [assignmentHistory, setAssignmentHistory] = useState<any[]>([])
-  const { assignments, devices } = useDataStore()
   const router = useRouter()
 
+  
+
   useEffect(() => {
-    loadHistory()
-  }, [assignments, devices])
+  async function loadData() {
+    try {
+      // 1️⃣ Fetch logged-in user profile
+      const profileRes = await fetch("/api/profile", { credentials: "include" });
+      const profile = await profileRes.json();
+      console.log("PROFILE RESPONSE:", profile);
 
-  const loadHistory = () => {
-    const userId = localStorage.getItem("userId") || ""
-    const myAssignments = assignments.filter((a: any) => a.employeeId === userId)
+      if (!profile.id) return;
 
-    const enriched = myAssignments.map((a: any) => {
-      const device = devices.find((d: any) => d.id === a.deviceId)
-      return {
-        ...a,
-        device,
+      const employeeId = profile.id;
+
+      // 2️⃣ Fetch all employee allocations
+      const allocRes = await fetch(`/api/employee/allocation/${employeeId}`);
+      const allocData = await allocRes.json();
+
+      const assignments = allocData.data || [];
+      console.log("Assignments for history:", assignments);
+
+      // 3️⃣ Map to frontend structure (populate resource)
+      const enriched = assignments.map((a: any) => ({
+        id: a._id,
+        assignedDate: a.AllocatedDate,
+        returnDate: a.returnDate,
         isActive: !a.returnDate,
-      }
-    })
+        notes: a.notes || "",
+        device: {
+          id: a.resource?._id,
+          brand: a.resource?.brand,
+          modelName: a.resource?.modelName,
+          assetTag: a.resource?.assetTag,
+          deviceType: a.resource?.resourceTypeName || "Device",
+        },
+      }));
 
-    enriched.sort((a: any, b: any) => new Date(b.assignedDate).getTime() - new Date(a.assignedDate).getTime())
+      // Sort newest first
+      enriched.sort(
+        (a: any, b: any) =>
+          new Date(b.assignedDate).getTime() - new Date(a.assignedDate).getTime()
+      );
 
-    setAssignmentHistory(enriched)
+      setAssignmentHistory(enriched);
+
+    } catch (error) {
+      console.error("Error loading assignment history:", error);
+    }
   }
+
+  loadData();
+}, []);
+
 
   const getDeviceIcon = (type: string) => {
     switch (type) {
