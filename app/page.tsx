@@ -19,7 +19,7 @@ export default function HomePage() {
   }, [])
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-white via-blue-50/30 to-white overflow-hidden">
+    <div className="min-h-screen bg-linear-to-br from-white via-blue-50/30 to-white overflow-hidden">
       {/* Navigation */}
       <nav className="fixed top-0 left-0 right-0 z-50 bg-white/80 backdrop-blur-md border-b border-blue-100 transition-all duration-300">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -132,7 +132,7 @@ export default function HomePage() {
               style={{ transform: `translateY(${scrollY * -0.2}px)` }}
             >
               <div className="relative">
-                <div className="absolute inset-0 bg-gradient-to-tr from-[#005A9C]/20 to-blue-400/20 rounded-3xl transform rotate-3 animate-pulse"></div>
+                <div className="absolute inset-0 bg-linear-to-tr from-[#005A9C]/20 to-blue-400/20 rounded-3xl transform rotate-3 animate-pulse"></div>
                 <div className="relative bg-white rounded-3xl shadow-2xl p-8 border border-blue-100 hover:shadow-3xl transition-shadow duration-500">
                   <Image
                     src="/images/logo-silver-ring.png"
@@ -210,7 +210,7 @@ export default function HomePage() {
                 }}
               >
                 <div
-                  className={`inline-block p-3 rounded-xl bg-gradient-to-br ${feature.color} mb-4 group-hover:scale-110 transition-transform duration-300`}
+                  className={`inline-block p-3 rounded-xl bg-linear-to-br ${feature.color} mb-4 group-hover:scale-110 transition-transform duration-300`}
                 >
                   <feature.icon className="h-8 w-8 text-white" />
                 </div>
@@ -254,7 +254,7 @@ export default function HomePage() {
 
       {/* Demo Modal */}
       {showDemo && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/70 backdrop-blur-sm animate-fade-in">
+        <div className="fixed inset-0 z-100 flex items-center justify-center bg-black/70 backdrop-blur-sm animate-fade-in">
           <div className="relative w-full max-w-4xl mx-4 bg-white rounded-2xl shadow-2xl overflow-hidden animate-scale-in">
             <button
               onClick={() => setShowDemo(false)}
@@ -267,7 +267,7 @@ export default function HomePage() {
               <p className="text-gray-600 mb-6">
                 Watch how Anthem InfoTech Hardware Asset Management System streamlines your IT operations
               </p>
-              <div className="aspect-video bg-gradient-to-br from-[#005A9C]/10 to-blue-100 rounded-xl flex items-center justify-center border-2 border-[#005A9C]/20">
+              <div className="aspect-video bg-linear-to-br from-[#005A9C]/10 to-blue-100 rounded-xl flex items-center justify-center border-2 border-[#005A9C]/20">
                 <div className="text-center space-y-4">
                   <div className="inline-block p-6 bg-white rounded-full shadow-xl">
                     <Play className="h-16 w-16 text-[#005A9C] animate-pulse" />
