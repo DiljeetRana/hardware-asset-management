@@ -131,7 +131,7 @@ export function AppSidebar({ role, ...props }: AppSidebarProps) {
               <SidebarMenuButton
                 asChild
                 isActive={pathname === item.url}
-                className="hover:bg-[#005A9C]/10 data-[active=true]:anthem-gradient data-[active=true]:text-white data-[active=true]:shadow-md transition-all duration-300 mb-1 rounded-lg"
+                className="hover:bg-[#005A9C]/10 data-[active=true]:anthem-gradient data-[active=true]:text-black data-[active=true]:shadow-md transition-all duration-300 mb-1 rounded-lg"
               >
                 <a href={item.url} className="flex items-center gap-3">
                   <item.icon className="h-4 w-4" />

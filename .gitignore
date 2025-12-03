@@ -12,8 +12,6 @@ pnpm-debug.log*
 out/
 
 # Production environment files
-.env
-.env.local
 .env.development.local
 .env.test.local
 .env.production.local
@@ -27,7 +25,6 @@ yarn.lock
 Thumbs.db
 
 # Editor files
-.vscode/
 .idea/
 *.sublime-project
 *.sublime-workspace
@@ -35,3 +32,7 @@ Thumbs.db
 # Misc
 *.log
 *.tsbuildinfo
+config.bat
+temp_auto_push.bat
+temp_interactive_push.bat
+branch_structure.json
