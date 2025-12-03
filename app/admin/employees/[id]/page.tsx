@@ -50,7 +50,8 @@ useEffect(() => {
       return
     }
     console.log("API HIT - PARAM ID:", params.id)  // ✅ Changed log
-    fetchEmployeeDetails()
+    fetchEmployeeDetails();
+    fetchEmployeeAssignments(params.id);
   }, [params.id])  // ✅ Changed dependency
 
   const fetchEmployeeDetails = async () => {
@@ -66,7 +67,7 @@ useEffect(() => {
     try {
       setLoading(true)
       // ✅ Changed API endpoint to use id instead of employeeCode
-      const res = await fetch(`http://localhost:3000/api/admin/employee/${employeeId}`, {
+      const res = await fetch(`/api/admin/employee/${employeeId}`, {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
@@ -134,8 +135,38 @@ useEffect(() => {
     }
   }
 
+  const fetchEmployeeAssignments = async (employeeId: string) => {
+    
+  try {
+    const res = await fetch(`/api/employee/allocation/${employeeId}`);
+    const data = await res.json();
+   console.log("assignmnet history:",data);
+    if (!res.ok || !data.success) {
+      console.error("Failed to load assignments");
+      return;
+    }
+
+    const assignments = data.data; // array
+
+    // Current devices → those with no returnDate
+    const active = assignments.filter((a: any) => a.returnDate === null);
+
+    // History → all assignments (including returned)
+    const history = assignments;
+
+    setCurrentDevices(active);
+    setEnrichedAssignments(history);
+
+    console.log("Active devices:", active);
+    console.log("Assignment history:", history);
+
+  } catch (error) {
+    console.error("Error loading assignments:", error);
+  }
+};
+
 const handleUpdate = async (_id: string, updates: Partial<Employee>) => {
-    const res = await fetch(`http://localhost:3000/api/admin/employee/${_id}`, {
+    const res = await fetch(`/api/admin/employee/${_id}`, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(updates),
@@ -167,7 +198,7 @@ const handleUpdate = async (_id: string, updates: Partial<Employee>) => {
    
     try {
       // ✅ Using _id for delete API
-      const res = await fetch(`http://localhost:3000/api/admin/employee/${employee._id}`, {
+      const res = await fetch(`api/admin/employee/${employee._id}`, {
         method: "DELETE",
       })
      
@@ -394,7 +425,7 @@ const handleUpdate = async (_id: string, updates: Partial<Employee>) => {
         </TabsContent>
 
         {/* Devices and History tabs - same as before */}
-        <TabsContent value="devices" className="mt-6">
+        {/* <TabsContent value="devices" className="mt-6">
           <Card className="bg-slate-800 border-slate-700">
             <CardHeader>
               <CardTitle className="text-white">Currently Assigned Devices</CardTitle>
@@ -409,9 +440,54 @@ const handleUpdate = async (_id: string, updates: Partial<Employee>) => {
               </div>
             </CardContent>
           </Card>
-        </TabsContent>
+        </TabsContent> */}
+        <TabsContent value="devices" className="mt-6">
+  <Card className="bg-slate-800 border-slate-700">
+    <CardHeader>
+      <CardTitle className="text-white">Currently Assigned Devices</CardTitle>
+    </CardHeader>
+    <CardContent>
+      {currentDevices.length === 0 ? (
+        <div className="text-center py-12">
+          <Briefcase className="h-12 w-12 text-slate-500 mx-auto mb-4" />
+          <p className="text-slate-400 text-lg">No devices currently assigned</p>
+          <p className="text-slate-500 mt-2">
+            This employee doesn't have any active device assignments.
+          </p>
+        </div>
+      ) : (
+        <div className="space-y-4">
+          {currentDevices.map((item: any) => (
+            <div
+              key={item._id}
+              className="p-4 rounded-lg bg-slate-700 border border-slate-600"
+            >
+              <p className="text-white font-semibold">
+                {item.resource?.name || "Unnamed Device"}
+              </p>
 
-        <TabsContent value="history" className="mt-6">
+              <p className="text-slate-400 text-sm">
+                Serial: {item.resource?.serialNumber}
+              </p>
+
+              <p className="text-slate-400 text-sm mt-1">
+                Allocated Date:{" "}
+                {new Date(item.AllocatedDate).toLocaleDateString()}
+              </p>
+
+              <p className="text-green-400 font-medium mt-2">
+                Status: {item.status}
+              </p>
+            </div>
+          ))}
+        </div>
+      )}
+    </CardContent>
+  </Card>
+</TabsContent>
+
+
+        {/* <TabsContent value="history" className="mt-6">
           <Card className="bg-slate-800 border-slate-700">
             <CardHeader>
               <CardTitle className="text-white">Device Assignment History</CardTitle>
@@ -426,7 +502,66 @@ const handleUpdate = async (_id: string, updates: Partial<Employee>) => {
               </div>
             </CardContent>
           </Card>
-        </TabsContent>
+        </TabsContent> */}
+        <TabsContent value="history" className="mt-6">
+  <Card className="bg-slate-800 border-slate-700">
+    <CardHeader>
+      <CardTitle className="text-white">Device Assignment History</CardTitle>
+    </CardHeader>
+
+    <CardContent>
+      {enrichedAssignments.length === 0 ? (
+        <div className="text-center py-12">
+          <Calendar className="h-12 w-12 text-slate-500 mx-auto mb-4" />
+          <p className="text-slate-400 text-lg">No assignment history</p>
+          <p className="text-slate-500 mt-2">
+            This employee has no device assignment history.
+          </p>
+        </div>
+      ) : (
+        <div className="space-y-4">
+          {enrichedAssignments.map((item: any) => (
+            <div
+              key={item._id}
+              className="p-4 rounded-lg bg-slate-700 border border-slate-600"
+            >
+              <p className="text-white font-semibold">
+                {item.resource?.name || "Unnamed Device"}
+              </p>
+
+              <p className="text-slate-400 text-sm">
+                Serial: {item.resource?.serialNumber}
+              </p>
+
+              <p className="text-slate-400 text-sm mt-1">
+                Allocated:{" "}
+                {new Date(item.AllocatedDate).toLocaleDateString()}
+              </p>
+
+              <p className="text-slate-400 text-sm">
+                Returned:{" "}
+                {item.returnDate
+                  ? new Date(item.returnDate).toLocaleDateString()
+                  : "Not returned"}
+              </p>
+
+              <p
+                className={`mt-2 font-medium ${
+                  item.status === "Allocated"
+                    ? "text-green-400"
+                    : "text-yellow-400"
+                }`}
+              >
+                Status: {item.status}
+              </p>
+            </div>
+          ))}
+        </div>
+      )}
+    </CardContent>
+  </Card>
+</TabsContent>
+
       </Tabs>
 
            <EditEmployeeModal

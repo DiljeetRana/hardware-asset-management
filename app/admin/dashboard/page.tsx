@@ -53,7 +53,10 @@ useEffect(() => {
     try {
       const res = await fetch("/api/admin/recent-allocation?limit=10"); // fetch 10 latest
       const data = await res.json();
-      if (data.success) setRecentAssignments(data.recentAssignments);
+      if (data.success)
+        console.log("recent assignments:",data.recentAssignments);
+         setRecentAssignments(data.recentAssignments);
+      
     } catch (err) {
       console.error(err);
     }
@@ -168,7 +171,7 @@ useEffect(() => {
                   <div
                     key={assignment.id}
                     className="flex items-center justify-between p-4 bg-linear-to-br from-slate-50 to-blue-50/50 rounded-xl hover:shadow-md transition-all cursor-pointer border border-slate-200/50"
-                    onClick={() => router.push(`/admin/devices/${assignment.deviceId}`)}
+                    onClick={() => router.push(`/admin/devices/${assignment.resource?._id}`)}
                   >
                     <div className="flex-1 min-w-0">
                       <p className="text-slate-900 font-semibold truncate">
@@ -179,11 +182,14 @@ useEffect(() => {
                     <div className="text-right ml-4">
                       <p className="text-xs text-slate-500">{new Date(assignment.
 AllocatedDate).toLocaleDateString()}</p>
-                      {!assignment.returnDate && (
+                      {/* {!assignment.returnDate && (
                         <span className="text-xs px-2 py-1 bg-linear-to-br from-[#1e4d7b] to-[#2563a8] text-white rounded-full shadow-sm">
                           Active
                         </span>
-                      )}
+                      )} */}
+                      <span className="text-xs px-2 py-1 bg-linear-to-br from-[#1e4d7b] to-[#2563a8] text-white rounded-full shadow-sm">
+                         {assignment.status}
+                        </span>
                     </div>
                   </div>
                 ))}
